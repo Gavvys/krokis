@@ -1,0 +1,10 @@
+[wiki]
+directory = '.krokis/wiki'
+
+[insights]
+directory = '.krokis/insights'
+tests = ''
+lints = ''
+
+[server]
+port = 8080
