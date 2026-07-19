@@ -1,0 +1,48 @@
+---
+title: Krokis User Guide
+author: Krokis CLI
+---
+
+# Krokis User Manual
+
+Welcome to the interactive project dashboard! Krokis helps agents maintain OpenSpec workflows and humans audit project health.
+
+## Core Commands
+
+You can run these commands directly in your terminal:
+
+- **Scaffold**: <code>krokis init</code> setups folders, configs, and Agent Skills.
+- **Insights**: <code>krokis insights</code> scans Git cadence and QA metrics reports.
+- **Diagnostics**: <code>krokis doctor</code> audits repository layout and setup health.
+- **Validate**: <code>krokis validate</code> verifies configuration file correctness.
+- **Serve**: <code>krokis serve</code> launches this local visual dashboard.
+
+## Interactive Widgets Showcase
+
+Here are some custom components you can embed inside any .mdx wiki file in .krokis/wiki/:
+
+### 1. Info Callouts (InfoBox)
+
+Use <code>&lt;InfoBox type="tip" title="..."&gt;Your message&lt;/InfoBox&gt;</code> to document tips:
+
+<InfoBox type="tip" title="Best Practice">
+  Always run <code>krokis validate</code> after editing configuration parameters!
+</InfoBox>
+
+Support types include: <code>info</code>, <code>tip</code>, <code>warning</code>, and <code>caution</code>.
+
+### 2. Telemetry KPI Cards (MetricsCard)
+
+Use <code>&lt;MetricsCard value="..." label="..." /&gt;</code> to draw focus to a metric:
+
+<MetricsCard value="100%" label="Code Quality Score" />
+
+### 3. Embed Dynamic Reports
+
+You can also embed the complete project health and git cadence widgets directly inside any wiki article:
+
+#### Git Cadence Graph (&lt;TaskCadence /&gt;):
+<TaskCadence />
+
+#### Unit Test Summary (&lt;TestResults /&gt;):
+<TestResults />

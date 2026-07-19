@@ -17,7 +17,7 @@ async function initApp() {
     
     // Set initial route or default to home/first wiki
     if (!window.location.hash) {
-        window.location.hash = '#/wiki/ARCHITECTURE';
+        window.location.hash = '#/wiki/USER_MANUAL';
     } else {
         handleRoute();
     }
@@ -73,7 +73,7 @@ function formatWikiTitle(name) {
 }
 
 async function handleRoute() {
-    const hash = window.location.hash || '#/wiki/ARCHITECTURE';
+    const hash = window.location.hash || '#/wiki/USER_MANUAL';
     currentRoute = hash;
 
     // Update active nav link
