@@ -17,3 +17,10 @@ The Krokis CLI SHALL parse and load settings from `.krokis/config.toml` for all 
 - **WHEN** user executes `krokis serve` with a valid `.krokis/config.toml` containing a port setting
 - **THEN** system successfully starts the server on the configured port
 
+### Requirement: OpenAPI scaffolding and config validation
+The Krokis CLI MUST support an `openapi` filepath config setting and scaffold a sample `openapi.yaml` on `krokis init`.
+
+#### Scenario: Running init scaffolds openapi
+- **WHEN** user executes `krokis init`
+- **THEN** system scaffolds `.krokis/config.toml` containing an `openapi` path mapping, and writes a default sample `openapi.yaml` in the workspace root
+
