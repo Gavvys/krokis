@@ -39,7 +39,7 @@ class InfoBox extends HTMLElement {
                     border-radius: 8px;
                     padding: 16px;
                     margin: 20px 0;
-                    font-family: 'Outfit', sans-serif;
+                    font-family: 'Open Sans', sans-serif;
                     color: #f3f4f6;
                     display: flex;
                     gap: 12px;

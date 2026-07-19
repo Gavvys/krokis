@@ -21,7 +21,7 @@ class MetricsCard extends HTMLElement {
                     box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.2);
                     backdrop-filter: blur(10px);
                     transition: transform 0.3s ease, border-color 0.3s ease;
-                    font-family: 'Outfit', sans-serif;
+                    font-family: 'Open Sans', sans-serif;
                 }
                 .card:hover {
                     transform: translateY(-4px);

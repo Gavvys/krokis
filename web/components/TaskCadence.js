@@ -48,7 +48,7 @@ class TaskCadence extends HTMLElement {
         this.shadowRoot.innerHTML = `
             <style>
                 .container {
-                    font-family: 'Outfit', sans-serif;
+                    font-family: 'Open Sans', sans-serif;
                     color: #f3f4f6;
                     display: flex;
                     flex-direction: column;

@@ -15,7 +15,7 @@ class TestResults extends HTMLElement {
 
     render() {
         if (!this._data) {
-            this.shadowRoot.innerHTML = `<div style="color: #9ca3af; font-family: 'Outfit';">Loading quality report...</div>`;
+            this.shadowRoot.innerHTML = `<div style="color: #9ca3af; font-family: 'Open Sans';">Loading quality report...</div>`;
             return;
         }
 
@@ -30,7 +30,7 @@ class TestResults extends HTMLElement {
         this.shadowRoot.innerHTML = `
             <style>
                 .quality-box {
-                    font-family: 'Outfit', sans-serif;
+                    font-family: 'Open Sans', sans-serif;
                     color: #f3f4f6;
                     display: flex;
                     flex-direction: column;
