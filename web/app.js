@@ -57,7 +57,7 @@ async function loadWikiList() {
             list.innerHTML = '';
             
             wikiFiles.forEach(f => {
-                const name = f.replace('.mdx', '');
+                const name = f.replace(/\.(mdx|md)$/, '');
                 if (name === 'WIKI_INDEX') {
                     return; // Skip rendering in dynamic list
                 }

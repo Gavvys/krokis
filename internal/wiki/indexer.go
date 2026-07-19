@@ -32,7 +32,13 @@ func BuildIndex(wikiDir string) error {
 			continue
 		}
 
-		path := filepath.Join(wikiDir, filename)
+		var path string
+		if strings.HasSuffix(filename, ".md") {
+			path = filename
+		} else {
+			path = filepath.Join(wikiDir, filename)
+		}
+
 		meta, err := parseMetadata(path, filename)
 		if err != nil {
 			// If parsing fails, fall back to basic metadata
@@ -61,6 +67,7 @@ func BuildIndex(wikiDir string) error {
 	} else {
 		for _, meta := range metadataList {
 			baseName := strings.TrimSuffix(meta.Filename, ".mdx")
+			baseName = strings.TrimSuffix(baseName, ".md")
 			sb.WriteString(fmt.Sprintf("### 📄 [%s](#/wiki/%s)\n", meta.Title, baseName))
 			if meta.Description != "" {
 				sb.WriteString(fmt.Sprintf("%s\n\n", meta.Description))

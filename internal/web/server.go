@@ -108,7 +108,30 @@ func StartServer(port int) error {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		path := filepath.Join(cfg.Wiki.Directory, strings.ToUpper(name)+".mdx")
+
+		upperName := strings.ToUpper(name)
+		var path string
+		
+		// Map canonical uppercase references to their root file paths
+		canonicals := map[string]string{
+			"AGENTS":         "AGENTS.md",
+			"PRODUCT":        "PRODUCT.md",
+			"ARCHITECTURE":   "ARCHITECTURE.md",
+			"DESIGN":         "DESIGN.md",
+			"ROADMAP":        "ROADMAP.md",
+			"PROJECT_MEMORY": "PROJECT_MEMORY.md",
+		}
+
+		if filename, ok := canonicals[upperName]; ok {
+			if _, err := os.Stat(filename); err == nil {
+				path = filename
+			}
+		}
+
+		if path == "" {
+			path = filepath.Join(cfg.Wiki.Directory, upperName+".mdx")
+		}
+
 		data, err := os.ReadFile(path)
 		if err != nil {
 			if os.IsNotExist(err) {

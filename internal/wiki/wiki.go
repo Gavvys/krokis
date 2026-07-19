@@ -48,7 +48,8 @@ Describe this document here.
 	return filename, nil
 }
 
-// List returns all valid SNAKE_CASE .mdx wiki files in the wiki directory
+// List returns all valid SNAKE_CASE .mdx wiki files in the wiki directory,
+// plus any canonical root-level reference files (AGENTS.md, PRODUCT.md, ARCHITECTURE.md, DESIGN.md, ROADMAP.md, PROJECT_MEMORY.md).
 func List(wikiDir string) ([]string, error) {
 	files, err := os.ReadDir(wikiDir)
 	if err != nil {
@@ -69,5 +70,14 @@ func List(wikiDir string) ([]string, error) {
 			wikiFiles = append(wikiFiles, f.Name())
 		}
 	}
+
+	// Scan workspace root for canonical references
+	canonicals := []string{"AGENTS.md", "PRODUCT.md", "ARCHITECTURE.md", "DESIGN.md", "ROADMAP.md", "PROJECT_MEMORY.md"}
+	for _, canon := range canonicals {
+		if _, err := os.Stat(canon); err == nil {
+			wikiFiles = append(wikiFiles, canon)
+		}
+	}
+
 	return wikiFiles, nil
 }
