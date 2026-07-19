@@ -31,3 +31,10 @@ The Krokis CLI MUST automatically regenerate the `WIKI_INDEX.mdx` file after cre
 - **WHEN** user executes `krokis wiki create "testing_indexing"`
 - **THEN** system scaffolds the new file and executes the index generator to update `WIKI_INDEX.mdx` automatically
 
+### Requirement: Root Architecture source precedence
+The `krokis init` command SHALL NOT scaffold `ARCHITECTURE.mdx` in the wiki directory. The dashboard's root `ARCHITECTURE.md` mapping SHALL remain the sole Architecture source.
+
+#### Scenario: Initializing a workspace
+- **WHEN** user executes `krokis init`
+- **THEN** the wiki directory does not contain `ARCHITECTURE.mdx` and the Architecture dashboard page resolves from root `ARCHITECTURE.md`
+

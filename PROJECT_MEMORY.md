@@ -22,3 +22,4 @@
 | 2026-07-19 | Adopt Open Sans as primary dashboard interface font and JetBrains Mono for monospace. |
 | 2026-07-20 | Adopt global constitutional reference artifacts (AGENTS.md, PRODUCT.md, ARCHITECTURE.md, DESIGN.md, ROADMAP.md, PROJECT_MEMORY.md) in repo root. |
 | 2026-07-20 | Treat local OpenSpec changes as team-level flow items. Report WIP, age, cycle time, throughput, and planning health; do not infer DORA metrics, rank individuals, or claim planning health proves validation. |
+| 2026-07-20 | Design decisions live in root `ARCHITECTURE.md`. The `consolidate-design-decisions` change proposed an `ARCHITECTURE.mdx` section, then was superseded by `remove-duplicate-architecture-wiki`, which keeps root `ARCHITECTURE.md` as the sole Architecture source and drops `ARCHITECTURE.mdx`. `consolidate-design-decisions` archived un-synced. |
