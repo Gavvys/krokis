@@ -37,3 +37,12 @@ Krokis runs as a standalone Go binary compiled from `main.go`. It has zero exter
     *   Uses CDNs to load `marked.js` and `prism.js` for lightweight browser markdown compilation.
     *   Loads `RapiDoc` dynamically to render OpenAPI specifications served at `/api/openapi`.
 	*   Renders `#/insights/flow` from local change-flow telemetry. Planning health shows artifact and task evidence; it does not claim OpenSpec validation passed.
+
+## Design Decisions
+
+### ADR 001: Standardized Specs
+
+- **Status**: Approved
+- **Context**: Code quality and agent alignment.
+- **Decision**: Use OpenSpec for all feature implementations.
+- **Consequences**: Structured specification folders and deterministic agent instructions.
