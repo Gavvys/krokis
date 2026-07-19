@@ -173,12 +173,12 @@ You can also embed the complete project health and git cadence widgets directly 
 }
 
 func getActiveAgentSkillsDir() string {
-	// Look for existing .agent or .agents
-	if _, err := os.Stat(".agent"); err == nil {
-		return ".agent/skills"
-	}
+	// Look for existing .agents or .agent
 	if _, err := os.Stat(".agents"); err == nil {
 		return ".agents/skills"
+	}
+	if _, err := os.Stat(".agent"); err == nil {
+		return ".agent/skills"
 	}
 	// Default to standard .agents
 	return ".agents/skills"
@@ -214,6 +214,21 @@ Run the following command to create a new wiki document:
 ` + "```bash" + `
 krokis wiki create <NAME>
 ` + "```" + `
+`,
+		},
+		"roadmap-coordination": {
+			"SKILL.md": `---
+name: roadmap-coordination
+description: Maintain the project's global ROADMAP.md using the Now, Queued, Exploring, and Parked horizons. Use when prioritizing future product directions, recording deferred ideas, promoting an idea toward an OpenSpec change, or reviewing roadmap scope against PRODUCT.md and active changes.
+---
+# Roadmap Coordination Skill
+Helps agents maintain commitment-based product development horizons.
+
+## Horizons
+- **Now**: current focus. Link to active OpenSpec change.
+- **Queued**: committed next work with clear scope.
+- **Exploring**: plausible ideas needing validation or user check-in.
+- **Parked**: passive idea bank.
 `,
 		},
 	}

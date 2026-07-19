@@ -1,20 +1,21 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  This project is Krokis, a project management overlay CLI on top of OpenSpec.
+  Root-level reference artifacts define durable context:
+  AGENTS.md governs contribution process; PRODUCT.md governs product intent;
+  ARCHITECTURE.md governs technical architecture; DESIGN.md governs UX;
+  PROJECT_MEMORY.md records settled context and decisions.
+  Read the relevant references before creating or revising artifacts.
+  Active changes propose revisions and do not silently override accepted specs or references.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - State the bounded outcome, non-goals, and affected project-level references.
+    - Identify conflicts with accepted specs, architecture, design, or product intent.
+  specs:
+    - Write testable requirements that reflect accepted product intent.
+  design:
+    - Explain changes to architecture, data flow, or UX conventions and link to the relevant root-level reference.
+  tasks:
+    - Include updates to affected canonical references when the change is accepted.
