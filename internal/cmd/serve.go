@@ -5,6 +5,7 @@ import (
 	"os"
 	"krokis/internal/config"
 	"krokis/internal/web"
+	"krokis/internal/wiki"
 
 	"github.com/spf13/cobra"
 )
@@ -20,6 +21,11 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			fmt.Printf("Error loading config: %v\n", err)
 			os.Exit(1)
+		}
+
+		// Rebuild wiki index on server start
+		if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
+			fmt.Printf("Warning: Failed to rebuild wiki index on serve: %v\n", err)
 		}
 
 		port := cfg.Server.Port

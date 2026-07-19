@@ -8,6 +8,7 @@ import (
 	"time"
 	"krokis/internal/config"
 	"krokis/internal/metrics"
+	"krokis/internal/wiki"
 
 	"github.com/spf13/cobra"
 )
@@ -59,6 +60,11 @@ var insightsCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Printf("✓ Created MDX summary report: %s\n", mdxPath)
+
+		// Rebuild wiki index to capture any changes/syncs
+		if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
+			fmt.Printf("Warning: Failed to rebuild wiki index on insights: %v\n", err)
+		}
 	},
 }
 

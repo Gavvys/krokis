@@ -61,6 +61,13 @@ var wikiCreateCmd = &cobra.Command{
 		}
 
 		fmt.Printf("✓ Created wiki file: %s/%s\n", cfg.Wiki.Directory, filename)
+
+		// Auto-rebuild the WIKI_INDEX.mdx
+		if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
+			fmt.Printf("Warning: Failed to rebuild wiki index: %v\n", err)
+		} else {
+			fmt.Println("✓ Regenerated wiki index WIKI_INDEX.mdx")
+		}
 	},
 }
 

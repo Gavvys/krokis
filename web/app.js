@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentRoute = '';
 let telemetryData = null;
+let wikiFiles = [];
 
 async function initApp() {
     // 1. Fetch telemetry
@@ -17,7 +18,8 @@ async function initApp() {
     
     // Set initial route or default to home/first wiki
     if (!window.location.hash) {
-        window.location.hash = '#/wiki/USER_MANUAL';
+        const hasIndex = wikiFiles.some(f => f === 'WIKI_INDEX.mdx');
+        window.location.hash = hasIndex ? '#/wiki/WIKI_INDEX' : '#/wiki/USER_MANUAL';
     } else {
         handleRoute();
     }
@@ -50,12 +52,15 @@ async function loadWikiList() {
     try {
         const res = await fetch('/api/wiki');
         if (res.ok) {
-            const files = await res.json();
+            wikiFiles = await res.json();
             const list = document.getElementById('wiki-links');
             list.innerHTML = '';
             
-            files.forEach(f => {
+            wikiFiles.forEach(f => {
                 const name = f.replace('.mdx', '');
+                if (name === 'WIKI_INDEX') {
+                    return; // Skip rendering in dynamic list
+                }
                 const li = document.createElement('li');
                 li.innerHTML = `<a href="#/wiki/${name}" class="nav-link" data-wiki="${name}">${formatWikiTitle(name)}</a>`;
                 list.appendChild(li);
@@ -66,6 +71,7 @@ async function loadWikiList() {
     }
 }
 
+// Helper to format uppercase SNAKE_CASE to readable Title Case
 function formatWikiTitle(name) {
     return name.split('_')
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
@@ -73,7 +79,11 @@ function formatWikiTitle(name) {
 }
 
 async function handleRoute() {
-    const hash = window.location.hash || '#/wiki/USER_MANUAL';
+    let hash = window.location.hash;
+    if (!hash) {
+        const hasIndex = wikiFiles.some(f => f === 'WIKI_INDEX.mdx');
+        hash = hasIndex ? '#/wiki/WIKI_INDEX' : '#/wiki/USER_MANUAL';
+    }
     currentRoute = hash;
 
     // Update active nav link

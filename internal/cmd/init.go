@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"krokis/internal/config"
+	"krokis/internal/wiki"
 
 	"github.com/spf13/cobra"
 )
@@ -58,6 +59,13 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Printf("✓ Scaffolded sample OpenAPI spec in %s\n", openapiPath)
+
+		// 6. Build initial Wiki Index
+		if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
+			fmt.Printf("Warning: Failed to create wiki index on init: %v\n", err)
+		} else {
+			fmt.Println("✓ Scaffolded wiki index WIKI_INDEX.mdx")
+		}
 
 		fmt.Println("\nKrokis Initialized Successfully! Run 'krokis serve' to open the dashboard.")
 	},
