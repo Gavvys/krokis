@@ -17,3 +17,10 @@ The frontend dashboard SHALL parse MDX documents in the browser and render custo
 - **WHEN** client-side dashboard loads `ARCHITECTURE.mdx` containing `<MetricsCard value="98%" label="Test Pass Rate" />`
 - **THEN** system parses the MDX, converts `<MetricsCard ... />` into `<metrics-card value="98%" label="Test Pass Rate"></metrics-card>`, and the browser's registered custom element renders the rich animated card
 
+### Requirement: Default landing on WIKI_INDEX
+The frontend dashboard routing logic MUST check if `WIKI_INDEX` is available, and load it as the default homepage route if present, falling back to `USER_MANUAL`.
+
+#### Scenario: Routing fallback
+- **WHEN** client-side dashboard loads without a specific hash route, and `WIKI_INDEX` is listed in the wiki files
+- **THEN** system redirects to `#/wiki/WIKI_INDEX`
+
