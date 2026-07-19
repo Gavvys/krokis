@@ -1,3 +1,18 @@
+/* ==========================================================================
+   Krokis Dashboard Styles
+   Organized by section (kept in one file intentionally; split only if grows large):
+     1. Design Tokens           :root variables
+     2. Base & Reset            *, body, app-container
+     3. Sidebar                 sidebar, logo, nav-link, wiki-nav-*
+     4. Sidebar Icon Button     icon-btn (refresh action)
+     5. Main Content            main-content, content-container
+     6. Controls                btn, btn-secondary
+     7. Markdown Rendering      markdown-body (inline code, tables, blockquotes, pre)
+     8. Dashboard Widgets       dashboard-grid, section-card
+     9. API Specification Page  api-spec-* (RapiDoc shell)
+   ========================================================================== */
+
+/* 1. Design Tokens */
 :root {
     --bg-primary: #0b0f19;
     --bg-secondary: #131b2e;
@@ -15,6 +30,7 @@
     --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
+/* 2. Base & Reset */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -35,7 +51,7 @@ body {
     width: 100vw;
 }
 
-/* Sidebar Styling */
+/* 3. Sidebar */
 .sidebar {
     width: 280px;
     background-color: var(--bg-secondary);
@@ -45,14 +61,63 @@ body {
 }
 
 .sidebar-header {
-    padding: 24px;
+    padding: 20px 24px;
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+/* 4. Sidebar Icon Button */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.4s ease;
+}
+
+.icon-btn:hover {
+    color: var(--text-primary);
+    background: var(--glass-bg);
+    border-color: var(--glass-border);
+}
+
+.icon-btn:hover svg {
+    transform: rotate(-120deg);
+}
+
+.icon-btn svg {
+    transition: transform 0.4s ease;
+}
+
+.icon-btn.is-loading,
+.icon-btn:disabled {
+    opacity: 0.55;
+    cursor: progress;
+}
+
+.icon-btn.is-loading svg {
+    animation: icon-btn-spin 0.9s linear infinite;
+}
+
+@keyframes icon-btn-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .logo-icon {
@@ -144,29 +209,15 @@ body {
     opacity: 0.7;
 }
 
-/* Main Content Styling */
+/* 5. Main Content */
 .main-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-image: 
+    background-image:
         radial-gradient(at 0% 0%, rgba(29, 78, 216, 0.05) 0px, transparent 50%),
         radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.02) 0px, transparent 50%);
-}
-
-.main-header {
-    height: 72px;
-    padding: 0 40px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.main-header h1 {
-    font-size: 22px;
-    font-weight: 600;
 }
 
 .content-container {
@@ -175,7 +226,7 @@ body {
     overflow-y: auto;
 }
 
-/* Controls */
+/* 6. Controls */
 .btn {
     padding: 8px 16px;
     border-radius: 8px;
@@ -196,7 +247,7 @@ body {
     background-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Markdown Rendering Polish */
+/* 7. Markdown Rendering */
 .markdown-body {
     line-height: 1.6;
     font-size: 15px;
@@ -229,6 +280,61 @@ body {
 .markdown-body code {
     font-family: 'JetBrains Mono', monospace;
     font-size: 13.5px;
+    background-color: rgba(250, 128, 114, 0.12);
+    color: #fa8072;
+    border: 1px solid rgba(250, 128, 114, 0.22);
+    border-radius: 6px;
+    padding: 1px 6px;
+}
+
+.markdown-body pre code {
+    background: none;
+    color: var(--text-primary);
+    border: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: 13px;
+}
+
+.markdown-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    background: var(--glass-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+.markdown-body th,
+.markdown-body td {
+    padding: 10px 14px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.markdown-body th {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.markdown-body tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.markdown-body blockquote,
+.markdown-body blockquote p {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    background: var(--glass-bg);
+    border-radius: 8px;
+    border: 0 !important;
+    border-left: 0 !important;
+    border-inline-start: 0 !important;
 }
 
 .markdown-body ul {
@@ -241,7 +347,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* Grid layout for Dashboard Widgets */
+/* 8. Dashboard Widgets */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -265,4 +371,105 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+/* 9. API Specification Page */
+.api-spec-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 24px 32px;
+    gap: 18px;
+    background-image:
+        radial-gradient(at 0% 0%, rgba(29, 78, 216, 0.06) 0px, transparent 55%),
+        radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.025) 0px, transparent 55%);
+}
+
+.api-spec-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 4px 2px 18px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.api-spec-title {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.api-spec-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.api-spec-name {
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.api-spec-name-empty {
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 400;
+}
+
+.api-spec-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.api-spec-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.api-spec-badge-muted {
+    color: var(--text-secondary);
+    background: var(--glass-bg);
+}
+
+.api-spec-badge-link {
+    color: var(--accent);
+    text-decoration: none;
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.22);
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.api-spec-badge-link:hover {
+    background: rgba(59, 130, 246, 0.16);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.api-spec-frame {
+    flex: 1;
+    min-height: 0;
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--bg-primary);
+    box-shadow: var(--card-shadow);
+}
+
+.api-spec-frame rapi-doc {
+    --nav-accent-color: #3b82f6;
 }
