@@ -119,6 +119,31 @@ body {
     color: #60a5fa;
 }
 
+.wiki-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wiki-nav-title {
+    font-weight: 500;
+}
+
+.wiki-nav-source {
+    color: var(--text-secondary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    line-height: 1.35;
+    opacity: 0.58;
+    overflow-wrap: anywhere;
+}
+
+.wiki-nav-link:hover .wiki-nav-source,
+.wiki-nav-link.active .wiki-nav-source {
+    color: inherit;
+    opacity: 0.7;
+}
+
 /* Main Content Styling */
 .main-content {
     flex: 1;

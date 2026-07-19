@@ -62,7 +62,21 @@ async function loadWikiList() {
                     return; // Skip rendering in dynamic list
                 }
                 const li = document.createElement('li');
-                li.innerHTML = `<a href="#/wiki/${name}" class="nav-link" data-wiki="${name}">${formatWikiTitle(name)}</a>`;
+                const link = document.createElement('a');
+                link.href = `#/wiki/${name}`;
+                link.className = 'nav-link wiki-nav-link';
+                link.dataset.wiki = name;
+
+                const title = document.createElement('span');
+                title.className = 'wiki-nav-title';
+                title.textContent = formatWikiTitle(name);
+
+                const source = document.createElement('span');
+                source.className = 'wiki-nav-source';
+                source.textContent = f;
+
+                link.append(title, source);
+                li.appendChild(link);
                 list.appendChild(li);
             });
         }
