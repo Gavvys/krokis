@@ -17,7 +17,7 @@ import (
 var EmbeddedFiles embed.FS
 
 // StartServer spins up the HTTP server serving the dashboard and APIs
-func StartServer(port int) error {
+func StartServer(port int, host string) error {
 	// Subtree standard fs
 	publicFS, err := fs.Sub(EmbeddedFiles, "web")
 	if err != nil {
@@ -155,6 +155,10 @@ func StartServer(port int) error {
 		fileServer.ServeHTTP(w, r)
 	})
 
-	fmt.Printf("Starting Krokis Server on http://localhost:%d ...\n", port)
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), mux)
+	displayHost := host
+	if displayHost == "0.0.0.0" {
+		displayHost = "localhost"
+	}
+	fmt.Printf("Starting Krokis Server on http://%s:%d ...\n", displayHost, port)
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 }

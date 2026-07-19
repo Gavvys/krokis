@@ -4,14 +4,12 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 
 ## Now
 
-- None. All active alignment tasks are complete.
+- Improve decision-ready local project insights, starting with OpenSpec work flow and planning-health visibility.
 
 ## Queued
 
-- **Configuration Schema & Doctor checks**: Validate `config.toml` structure, port mappings, and add environment sanity validation checks. (Archived change `2026-07-19-krokis-config-schema`).
-- **Interactive OpenAPI visualizer**: Embed a native RapiDoc viewer in the dashboard client and expose endpoints serving the configured spec file. (Archived change `2026-07-19-add-openapi-view`).
 - **Extended visual component library**: Add commit activity heatmaps, spec-to-code coverage indicators, and lint violation treemaps.
-- **Wiki indexing & sync rules**: Auto-generate `WIKI_INDEX.mdx` tables of contents and sync diagrams on code archive events.
+- **Wiki content enrichment**: Improve documentation discovery and diagram support without making the wiki the canonical home for root master files.
 
 ## Exploring
 

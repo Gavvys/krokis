@@ -12,9 +12,10 @@ import (
 )
 
 type TelemetryData struct {
-	Git      GitMetrics    `json:"git"`
-	Codebase CodeMetrics   `json:"codebase"`
-	Quality  QualityMetrics `json:"quality"`
+	Git        GitMetrics        `json:"git"`
+	Codebase   CodeMetrics       `json:"codebase"`
+	Quality    QualityMetrics    `json:"quality"`
+	ChangeFlow ChangeFlowMetrics `json:"change_flow"`
 }
 
 type GitMetrics struct {
@@ -49,15 +50,15 @@ type LangStat struct {
 }
 
 type QualityMetrics struct {
-	LintIssues int          `json:"lint_issues"`
-	Tests      TestReport   `json:"tests"`
+	LintIssues int        `json:"lint_issues"`
+	Tests      TestReport `json:"tests"`
 }
 
 type TestReport struct {
-	Total    int `json:"total"`
-	Passed   int `json:"passed"`
-	Failed   int `json:"failed"`
-	Skipped  int `json:"skipped"`
+	Total   int `json:"total"`
+	Passed  int `json:"passed"`
+	Failed  int `json:"failed"`
+	Skipped int `json:"skipped"`
 }
 
 // Gather Git, Codebase, and Quality telemetry
@@ -77,6 +78,9 @@ func Gather(testFile, lintFile string) (*TelemetryData, error) {
 
 	// Gather quality metrics
 	gatherQualityMetrics(&data.Quality, testFile, lintFile)
+
+	// Gather local OpenSpec flow data. Missing OpenSpec folders produce an empty result.
+	data.ChangeFlow = gatherChangeFlow(filepath.Join("openspec", "changes"), time.Now())
 
 	return data, nil
 }

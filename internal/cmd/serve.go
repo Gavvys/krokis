@@ -11,6 +11,7 @@ import (
 )
 
 var portFlag int
+var hostFlag string
 
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -33,7 +34,12 @@ var serveCmd = &cobra.Command{
 			port = portFlag
 		}
 
-		err = web.StartServer(port)
+		host := "0.0.0.0"
+		if hostFlag != "" {
+			host = hostFlag
+		}
+
+		err = web.StartServer(port, host)
 		if err != nil {
 			fmt.Printf("Server failed: %v\n", err)
 			os.Exit(1)
@@ -43,5 +49,6 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	serveCmd.Flags().IntVarP(&portFlag, "port", "p", 0, "Port to run the server on")
+	serveCmd.Flags().StringVarP(&hostFlag, "host", "H", "0.0.0.0", "Host address to bind to (use 0.0.0.0 for LAN)")
 	rootCmd.AddCommand(serveCmd)
 }

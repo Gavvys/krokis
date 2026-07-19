@@ -112,6 +112,9 @@ async function handleRoute() {
     } else if (hash === '#/insights/cadence') {
         titleEl.textContent = 'Task Cadence';
         renderCadencePage(container);
+	} else if (hash === '#/insights/flow') {
+		titleEl.textContent = 'Flow Insights';
+		renderFlowPage(container);
     } else if (hash === '#/insights/openapi') {
         titleEl.textContent = 'API Specifications';
         renderOpenAPIPage(container);
@@ -192,6 +195,19 @@ function renderCadencePage(container) {
     const el = document.createElement('task-cadence');
     el.data = telemetryData;
     container.querySelector('#cadence-component-container').appendChild(el);
+}
+
+function renderFlowPage(container) {
+	container.innerHTML = `
+		<div class="section-card" style="max-width: 1200px; margin: 0 auto;">
+			<h2>OpenSpec Change Flow</h2>
+			<p style="color: #9ca3af; margin-bottom: 20px;">Team-level flow and planning evidence. Planning health is not validation success.</p>
+			<div id="flow-component-container"></div>
+		</div>
+	`;
+	const el = document.createElement('flow-insights');
+	el.data = telemetryData;
+	container.querySelector('#flow-component-container').appendChild(el);
 }
 
 function renderOpenAPIPage(container) {

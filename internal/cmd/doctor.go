@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"krokis/internal/config"
 	"os"
 	"path/filepath"
-	"krokis/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +15,8 @@ var doctorCmd = &cobra.Command{
 	Long:  `Performs diagnostic checks on Git, OpenSpec, Krokis config, directories, and telemetry QA files.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		failed := false
-		fmt.Println("🏥 Running Krokis Doctor Diagnostics...\n")
+		fmt.Println("🏥 Running Krokis Doctor Diagnostics...")
+		fmt.Println()
 
 		// 1. Check Git
 		if _, err := os.Stat(".git"); err != nil {

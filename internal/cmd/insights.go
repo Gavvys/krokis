@@ -3,12 +3,12 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
-	"time"
 	"krokis/internal/config"
 	"krokis/internal/metrics"
 	"krokis/internal/wiki"
+	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -102,10 +102,16 @@ Telemetry scan run at %s.
 <MetricsCard value="%.1f%%" label="Test Pass Rate (%d/%d passed)" />
 <MetricsCard value="%d" label="Active Lint Violations" />
 
+## OpenSpec Change Flow
+
+<MetricsCard value="%d" label="Active OpenSpec Changes" />
+
+Detailed age, cycle-time, throughput, and planning-health data is available in the Flow Insights dashboard. Unavailable source dates are not reported as zero.
+
 `, timeNowFormatted(), data.Codebase.TotalLines, data.Codebase.TotalFiles,
 		data.Git.TotalCommits, data.Git.RecentCommits,
 		testPassRate, data.Quality.Tests.Passed, data.Quality.Tests.Total,
-		data.Quality.LintIssues)
+		data.Quality.LintIssues, data.ChangeFlow.ActiveWIP)
 }
 
 func timeNowFormatted() string {
