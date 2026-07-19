@@ -2,6 +2,10 @@
 krokis
 dist/
 bin/
+tmp/
+
+# Air live-reload artifacts
+.air/
 
 # Dependency directories
 node_modules/
