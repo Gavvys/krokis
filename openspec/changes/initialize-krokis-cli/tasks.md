@@ -24,5 +24,6 @@
 
 ## 5. Agent Skills Scaffolding & Verification
 
-- [ ] 5.1 Scaffold the `.krokis/skills/` directory with `SKILL.md` documents and run script templates
+- [ ] 5.1 Scaffold Krokis agent skills into the active agent skills folder (`.agents/skills/` or `.agent/skills/`) with `SKILL.md` documents and run script templates
 - [ ] 5.2 Manually verify end-to-end integration by initializing, running insights, and serving the dashboard
+
