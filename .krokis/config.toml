@@ -5,6 +5,7 @@ directory = '.krokis/wiki'
 directory = '.krokis/insights'
 tests = ''
 lints = ''
+openapi = 'openapi.yaml'
 
 [server]
 port = 8080

@@ -21,6 +21,7 @@ type InsightsConfig struct {
 	Directory string `toml:"directory"`
 	Tests     string `toml:"tests"`
 	Lints     string `toml:"lints"`
+	OpenAPI   string `toml:"openapi"`
 }
 
 type ServerConfig struct {
@@ -35,6 +36,7 @@ func Default() *Config {
 		},
 		Insights: InsightsConfig{
 			Directory: ".krokis/insights",
+			OpenAPI:   "openapi.yaml",
 		},
 		Server: ServerConfig{
 			Port: 8080,

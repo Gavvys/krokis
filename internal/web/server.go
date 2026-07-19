@@ -49,6 +49,37 @@ func StartServer(port int) error {
 		_, _ = w.Write(data)
 	})
 
+	// 1.5. API - Get OpenAPI Spec
+	mux.HandleFunc("/api/openapi", func(w http.ResponseWriter, r *http.Request) {
+		cfg, err := config.Load()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if cfg.Insights.OpenAPI == "" {
+			http.Error(w, "openapi spec not configured", http.StatusBadRequest)
+			return
+		}
+		data, err := os.ReadFile(cfg.Insights.OpenAPI)
+		if err != nil {
+			if os.IsNotExist(err) {
+				http.Error(w, fmt.Sprintf("openapi spec file '%s' not found", cfg.Insights.OpenAPI), http.StatusNotFound)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		contentType := "text/plain; charset=utf-8"
+		if strings.HasSuffix(cfg.Insights.OpenAPI, ".json") {
+			contentType = "application/json"
+		} else if strings.HasSuffix(cfg.Insights.OpenAPI, ".yaml") || strings.HasSuffix(cfg.Insights.OpenAPI, ".yml") {
+			contentType = "text/yaml"
+		}
+		w.Header().Set("Content-Type", contentType)
+		_, _ = w.Write(data)
+	})
+
 	// 2. API - Get wiki list
 	mux.HandleFunc("/api/wiki", func(w http.ResponseWriter, r *http.Request) {
 		cfg, err := config.Load()

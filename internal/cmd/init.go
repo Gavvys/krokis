@@ -48,6 +48,17 @@ var initCmd = &cobra.Command{
 		}
 		fmt.Printf("✓ Scaffolded Krokis skills in %s/\n", activeAgentDir)
 
+		// 5. Scaffold sample openapi.yaml
+		openapiPath := cfg.Insights.OpenAPI
+		if openapiPath == "" {
+			openapiPath = "openapi.yaml"
+		}
+		if err := scaffoldOpenAPISpec(openapiPath); err != nil {
+			fmt.Printf("Error scaffolding openapi.yaml: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("✓ Scaffolded sample OpenAPI spec in %s\n", openapiPath)
+
 		fmt.Println("\nKrokis Initialized Successfully! Run 'krokis serve' to open the dashboard.")
 	},
 }
@@ -222,4 +233,31 @@ krokis wiki create <NAME>
 		}
 	}
 	return nil
+}
+
+func scaffoldOpenAPISpec(path string) error {
+	if _, err := os.Stat(path); err == nil {
+		return nil // already exists
+	}
+
+	content := `openapi: 3.0.3
+info:
+  title: Krokis Sample API
+  description: This is a placeholder OpenAPI spec scaffolded by Krokis init.
+  version: 1.0.0
+paths:
+  /api/insights:
+    get:
+      summary: Retrieve project health metrics
+      responses:
+        '200':
+          description: A telemetry dataset in JSON format
+  /api/wiki:
+    get:
+      summary: Retrieve list of MDX wiki articles
+      responses:
+        '200':
+          description: A list of wiki filename strings
+`
+	return os.WriteFile(path, []byte(content), 0644)
 }

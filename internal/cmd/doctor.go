@@ -96,4 +96,11 @@ func checkQAReports(cfg *config.Config) {
 			fmt.Printf("✅ [QA] Mapped lint results found: %s\n", filepath.Base(cfg.Insights.Lints))
 		}
 	}
+	if cfg.Insights.OpenAPI != "" {
+		if _, err := os.Stat(cfg.Insights.OpenAPI); err != nil {
+			fmt.Printf("⚠️  [QA] Configured OpenAPI spec file '%s' not found on disk. Run 'krokis init' to scaffold.\n", cfg.Insights.OpenAPI)
+		} else {
+			fmt.Printf("✅ [QA] Mapped OpenAPI spec found: %s\n", filepath.Base(cfg.Insights.OpenAPI))
+		}
+	}
 }

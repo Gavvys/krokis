@@ -87,6 +87,10 @@ async function handleRoute() {
     const titleEl = document.getElementById('page-title');
     const container = document.getElementById('content-container');
     container.innerHTML = '<div style="color: #9ca3af;">Loading content...</div>';
+    
+    // Toggle full-screen pane for OpenAPI interactive viewer
+    container.style.padding = (hash === '#/insights/openapi') ? '0' : '40px';
+    container.style.overflow = (hash === '#/insights/openapi') ? 'hidden' : 'auto';
 
     if (hash.startsWith('#/wiki/')) {
         const wikiName = hash.replace('#/wiki/', '');
@@ -98,6 +102,9 @@ async function handleRoute() {
     } else if (hash === '#/insights/cadence') {
         titleEl.textContent = 'Task Cadence';
         renderCadencePage(container);
+    } else if (hash === '#/insights/openapi') {
+        titleEl.textContent = 'API Specifications';
+        renderOpenAPIPage(container);
     }
 }
 
@@ -175,4 +182,19 @@ function renderCadencePage(container) {
     const el = document.createElement('task-cadence');
     el.data = telemetryData;
     container.querySelector('#cadence-component-container').appendChild(el);
+}
+
+function renderOpenAPIPage(container) {
+    container.innerHTML = `
+        <rapi-doc
+            spec-url="/api/openapi"
+            theme="dark"
+            bg-color="#0b0f19"
+            text-color="#f3f4f6"
+            primary-color="#3b82f6"
+            render-style="read"
+            show-header="false"
+            style="height: 100%; width: 100%; display: block;"
+        ></rapi-doc>
+    `;
 }

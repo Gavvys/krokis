@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: Krokis Sample API
+  description: This is a placeholder OpenAPI spec scaffolded by Krokis init.
+  version: 1.0.0
+paths:
+  /api/insights:
+    get:
+      summary: Retrieve project health metrics
+      responses:
+        '200':
+          description: A telemetry dataset in JSON format
+  /api/wiki:
+    get:
+      summary: Retrieve list of MDX wiki articles
+      responses:
+        '200':
+          description: A list of wiki filename strings
