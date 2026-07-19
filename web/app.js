@@ -27,12 +27,12 @@ async function initApp() {
     // Refresh button
     document.getElementById('refresh-btn').addEventListener('click', async () => {
         const btn = document.getElementById('refresh-btn');
-        btn.textContent = 'Refreshing...';
+        btn.classList.add('is-loading');
         btn.disabled = true;
         await fetchTelemetry();
         await loadWikiList();
         await handleRoute();
-        btn.textContent = 'Refresh';
+        btn.classList.remove('is-loading');
         btn.disabled = false;
     });
 }
@@ -108,29 +108,28 @@ async function handleRoute() {
         }
     });
 
-    const titleEl = document.getElementById('page-title');
     const container = document.getElementById('content-container');
     container.innerHTML = '<div style="color: #9ca3af;">Loading content...</div>';
     
-    // Toggle full-screen pane for OpenAPI interactive viewer
+    // OpenAPI page owns its own padding/scroll via .api-spec-page
     container.style.padding = (hash === '#/insights/openapi') ? '0' : '40px';
     container.style.overflow = (hash === '#/insights/openapi') ? 'hidden' : 'auto';
 
     if (hash.startsWith('#/wiki/')) {
         const wikiName = hash.replace('#/wiki/', '');
-        titleEl.textContent = formatWikiTitle(wikiName);
+        document.title = `${formatWikiTitle(wikiName)} · Krokis`;
         await renderWikiPage(wikiName, container);
     } else if (hash === '#/insights/health') {
-        titleEl.textContent = 'Project Quality';
+        document.title = 'Project Quality · Krokis';
         renderHealthPage(container);
     } else if (hash === '#/insights/cadence') {
-        titleEl.textContent = 'Task Cadence';
+        document.title = 'Task Cadence · Krokis';
         renderCadencePage(container);
 	} else if (hash === '#/insights/flow') {
-		titleEl.textContent = 'Flow Insights';
+		document.title = 'Flow Insights · Krokis';
 		renderFlowPage(container);
     } else if (hash === '#/insights/openapi') {
-        titleEl.textContent = 'API Specifications';
+        document.title = 'API Specifications · Krokis';
         renderOpenAPIPage(container);
     }
 }
@@ -209,6 +208,10 @@ function renderCadencePage(container) {
     const el = document.createElement('task-cadence');
     el.data = telemetryData;
     container.querySelector('#cadence-component-container').appendChild(el);
+
+    const heat = document.createElement('commit-heatmap');
+    heat.data = telemetryData.git;
+    container.querySelector('#cadence-component-container').appendChild(heat);
 }
 
 function renderFlowPage(container) {
@@ -224,17 +227,74 @@ function renderFlowPage(container) {
 	container.querySelector('#flow-component-container').appendChild(el);
 }
 
-function renderOpenAPIPage(container) {
+async function renderOpenAPIPage(container) {
     container.innerHTML = `
-        <rapi-doc
-            spec-url="/api/openapi"
-            theme="dark"
-            bg-color="#0b0f19"
-            text-color="#f3f4f6"
-            primary-color="#3b82f6"
-            render-style="read"
-            show-header="false"
-            style="height: 100%; width: 100%; display: block;"
-        ></rapi-doc>
+        <div class="api-spec-page">
+            <header class="api-spec-header">
+                <div class="api-spec-title">
+                    <span class="api-spec-eyebrow">OpenAPI</span>
+                    <h2 id="api-spec-name" class="api-spec-name">Loading spec…</h2>
+                </div>
+                <div class="api-spec-meta">
+                    <span id="api-spec-version" class="api-spec-badge api-spec-badge-muted">v—</span>
+                    <a id="api-spec-source" class="api-spec-badge api-spec-badge-link" href="/api/openapi" target="_blank" rel="noopener">view raw</a>
+                </div>
+            </header>
+            <div class="api-spec-frame">
+                <rapi-doc
+                    spec-url="/api/openapi"
+                    theme="dark"
+                    bg-color="#0b0f19"
+                    text-color="#f3f4f6"
+                    primary-color="#3b82f6"
+                    regular-font="Open Sans, sans-serif"
+                    mono-font="JetBrains Mono, monospace"
+                    nav-bg-color="#0d1322"
+                    nav-text-color="#9ca3af"
+                    nav-hover-bg-color="rgba(255,255,255,0.04)"
+                    nav-hover-text-color="#f3f4f6"
+                    nav-item-spacing="relaxed"
+                    layout="column"
+                    render-style="view"
+                    schema-style="tree"
+                    default-schema-tab="schema"
+                    show-header="false"
+                    show-info="true"
+                    allow-spec-url-change="false"
+                    allow-spec-file-load="false"
+                    allow-authentication="false"
+                    allow-try="true"
+                    api-key-name="Authorization"
+                    api-key-location="header"
+                    style="height: 100%; width: 100%; display: block;"
+                ></rapi-doc>
+            </div>
+        </div>
     `;
+
+    try {
+        const res = await fetch('/api/openapi');
+        if (res.ok) {
+            const text = await res.text();
+            const title = (text.match(/^title:\s*(.+)$/m) || [])[1]?.trim().replace(/^["']|["']$/g, '');
+            const version = (text.match(/^version:\s*(.+)$/m) || [])[1]?.trim().replace(/^["']|["']$/g, '');
+            const nameEl = document.getElementById('api-spec-name');
+            const verEl = document.getElementById('api-spec-version');
+            if (nameEl && title) nameEl.textContent = title;
+            else if (nameEl) nameEl.textContent = 'Untitled spec';
+            if (verEl) verEl.textContent = version ? `v${version}` : 'v—';
+        } else {
+            const nameEl = document.getElementById('api-spec-name');
+            if (nameEl) {
+                nameEl.textContent = 'No spec configured';
+                nameEl.classList.add('api-spec-name-empty');
+            }
+        }
+    } catch (e) {
+        const nameEl = document.getElementById('api-spec-name');
+        if (nameEl) {
+            nameEl.textContent = 'Failed to load spec';
+            nameEl.classList.add('api-spec-name-empty');
+        }
+    }
 }

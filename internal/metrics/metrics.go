@@ -23,6 +23,12 @@ type GitMetrics struct {
 	RecentCommits int          `json:"recent_commits"` // past 14 days
 	Authors       []AuthorStat `json:"authors"`
 	History       []CommitInfo `json:"history"`
+	Daily         []DayCount   `json:"daily"`
+}
+
+type DayCount struct {
+	Date  string `json:"date"`  // YYYY-MM-DD
+	Count int    `json:"count"`
 }
 
 type AuthorStat struct {
@@ -132,6 +138,56 @@ func gatherGitMetrics(git *GitMetrics) error {
 		git.Authors = append(git.Authors, AuthorStat{Name: name, Commits: count})
 	}
 
+	// Daily commit counts for the trailing 365 days (heatmap data).
+	if err := gatherDailyCommits(git); err != nil {
+		// Non-fatal: heatmap just renders empty.
+		fmt.Printf("Warning: Failed to gather daily commit counts: %v\n", err)
+	}
+
+	return nil
+}
+
+func gatherDailyCommits(git *GitMetrics) error {
+	since := time.Now().AddDate(0, 0, -364).Format("2006-01-02")
+	cmd := exec.Command("git", "log", "--since="+since, `--date=short`, `--pretty=format:%ad`)
+	out, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+
+	buckets := make(map[string]int)
+	for _, line := range strings.Split(string(out), "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		buckets[line]++
+	}
+
+	if len(buckets) == 0 {
+		return nil
+	}
+
+	// Produce a contiguous ascending series from the earliest bucket to today.
+	var minDay, maxDay string
+	for day := range buckets {
+		if minDay == "" || day < minDay {
+			minDay = day
+		}
+		if day > maxDay {
+			maxDay = day
+		}
+	}
+	start, errS := time.Parse("2006-01-02", minDay)
+	end, errE := time.Parse("2006-01-02", maxDay)
+	if errS != nil || errE != nil {
+		return nil
+	}
+
+	for d := start; !d.After(end); d = d.AddDate(0, 0, 1) {
+		key := d.Format("2006-01-02")
+		git.Daily = append(git.Daily, DayCount{Date: key, Count: buckets[key]})
+	}
 	return nil
 }
 
