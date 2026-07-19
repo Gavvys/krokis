@@ -17,3 +17,10 @@ The Krokis CLI SHALL provide a CLI command to scaffold a new SNAKE_CASE MDX wiki
 - **WHEN** user executes `krokis wiki create "system_architecture"`
 - **THEN** system creates `.krokis/wiki/SYSTEM_ARCHITECTURE.mdx` with default frontmatter (`title`, `author`, `created_at`) and exits with 0
 
+### Requirement: User manual scaffolding
+The Krokis CLI MUST scaffold a `USER_MANUAL.mdx` page explaining Krokis usages and widgets by default on project initialization.
+
+#### Scenario: Running init scaffolds user manual
+- **WHEN** user executes `krokis init`
+- **THEN** system creates `.krokis/wiki/USER_MANUAL.mdx` with interactive custom component references
+
