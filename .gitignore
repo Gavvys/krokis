@@ -1,0 +1,13 @@
+# Built binaries
+krokis
+dist/
+bin/
+
+# Dependency directories
+node_modules/
+
+# Local Krokis insights (telemetry datasets)
+.krokis/insights/
+
+# OS metadata
+.DS_Store
