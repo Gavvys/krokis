@@ -42,10 +42,19 @@ async function fetchTelemetry() {
         const res = await fetch('/api/insights');
         if (res.ok) {
             telemetryData = await res.json();
+            updateArchivedLinkVisibility();
         }
     } catch (e) {
         console.error('Failed to load insights:', e);
     }
+}
+
+function updateArchivedLinkVisibility() {
+    const link = document.getElementById('archived-link');
+    if (!link) return;
+    const hasArchived = (telemetryData?.change_flow?.changes || [])
+        .some(change => change.status === 'completed');
+    link.hidden = !hasArchived;
 }
 
 async function loadWikiList() {
@@ -98,6 +107,18 @@ async function handleRoute() {
         const hasIndex = wikiFiles.some(f => f === 'WIKI_INDEX.mdx');
         hash = hasIndex ? '#/wiki/WIKI_INDEX' : '#/wiki/USER_MANUAL';
     }
+
+    // Legacy URL compatibility: rewrite deprecated routes to their canonical form.
+    for (const { from, to } of legacyRedirects) {
+        if (hash === from || hash.startsWith(from + '/')) {
+            const tail = hash.slice(from.length);
+            const next = to + tail;
+            history.replaceState(null, '', next);
+            hash = next;
+            break;
+        }
+    }
+
     currentRoute = hash;
 
     // Update active nav link
@@ -110,29 +131,70 @@ async function handleRoute() {
 
     const container = document.getElementById('content-container');
     container.innerHTML = '<div style="color: #9ca3af;">Loading content...</div>';
-    
+
     // OpenAPI page owns its own padding/scroll via .api-spec-page
     container.style.padding = (hash === '#/insights/openapi') ? '0' : '40px';
     container.style.overflow = (hash === '#/insights/openapi') ? 'hidden' : 'auto';
 
-    if (hash.startsWith('#/wiki/')) {
-        const wikiName = hash.replace('#/wiki/', '');
-        document.title = `${formatWikiTitle(wikiName)} · Krokis`;
-        await renderWikiPage(wikiName, container);
-    } else if (hash === '#/insights/health') {
-        document.title = 'Project Quality · Krokis';
-        renderHealthPage(container);
-    } else if (hash === '#/insights/cadence') {
-        document.title = 'Task Cadence · Krokis';
-        renderCadencePage(container);
-	} else if (hash === '#/insights/flow') {
-		document.title = 'Flow Insights · Krokis';
-		renderFlowPage(container);
-    } else if (hash === '#/insights/openapi') {
-        document.title = 'API Specifications · Krokis';
-        renderOpenAPIPage(container);
+    for (const route of routes) {
+        const params = route.match(hash);
+        if (params) {
+            document.title = route.title(params);
+            await route.render(container, params);
+            return;
+        }
     }
 }
+
+const legacyRedirects = [
+    { from: '#/insights/flow', to: '#/changes' },
+];
+
+const routes = [
+    {
+        match: (hash) => {
+            if (hash.startsWith('#/wiki/')) return { name: hash.slice('#/wiki/'.length) };
+            return null;
+        },
+        title: (params) => `${formatWikiTitle(params.name)} · Krokis`,
+        render: (container, params) => renderWikiPage(params.name, container),
+    },
+    {
+        match: (hash) => hash === '#/insights/health' ? {} : null,
+        title: () => 'Project Quality · Krokis',
+        render: (container) => renderHealthPage(container),
+    },
+    {
+        match: (hash) => hash === '#/insights/cadence' ? {} : null,
+        title: () => 'Task Cadence · Krokis',
+        render: (container) => renderCadencePage(container),
+    },
+    {
+        match: (hash) => hash === '#/changes' ? {} : null,
+        title: () => 'Changes · Krokis',
+        render: (container) => renderChangesPage(container),
+    },
+    {
+        match: (hash) => hash === '#/changes/archived' ? {} : null,
+        title: () => 'Archived Changes · Krokis',
+        render: (container) => renderArchivedPage(container),
+    },
+    {
+        match: (hash) => {
+            if (hash.startsWith('#/changes/')) {
+                return { name: decodeURIComponent(hash.slice('#/changes/'.length)) };
+            }
+            return null;
+        },
+        title: (params) => `${params.name} · Changes · Krokis`,
+        render: (container, params) => renderChangeDetail(container, params.name),
+    },
+    {
+        match: (hash) => hash === '#/insights/openapi' ? {} : null,
+        title: () => 'API Specifications · Krokis',
+        render: (container) => renderOpenAPIPage(container),
+    },
+];
 
 async function renderWikiPage(name, container) {
     try {
@@ -186,45 +248,146 @@ async function renderWikiPage(name, container) {
     }
 }
 
-function renderHealthPage(container) {
+function mountPage(container, opts) {
+    const { tag, title, subtitle, mode, maxWidth, extraMounts } = opts;
+    const width = maxWidth || '1200px';
+    const subtitleHtml = subtitle
+        ? `<p style="color: #9ca3af; margin-bottom: 20px;">${subtitle}</p>`
+        : '';
     container.innerHTML = `
-        <div class="section-card" style="max-width: 600px; margin: 0 auto;">
-            <h2>📊 Code Quality Overview</h2>
-            <div id="quality-component-container"></div>
+        <div class="section-card" style="max-width: ${width}; margin: 0 auto;">
+            <h2>${title}</h2>
+            ${subtitleHtml}
+            <div class="page-component-container"></div>
         </div>
     `;
-    const el = document.createElement('test-results');
+    const inner = container.querySelector('.page-component-container');
+    const el = document.createElement(tag);
     el.data = telemetryData;
-    container.querySelector('#quality-component-container').appendChild(el);
+    if (mode) el.mode = mode;
+    inner.appendChild(el);
+    if (typeof extraMounts === 'function') extraMounts(inner, el);
+    return { inner, el };
+}
+
+function renderHealthPage(container) {
+    mountPage(container, {
+        tag: 'test-results',
+        title: '📊 Code Quality Overview',
+        maxWidth: '600px',
+    });
 }
 
 function renderCadencePage(container) {
-    container.innerHTML = `
-        <div class="section-card" style="max-width: 800px; margin: 0 auto;">
-            <h2>📈 Development Cadence</h2>
-            <div id="cadence-component-container"></div>
-        </div>
-    `;
-    const el = document.createElement('task-cadence');
-    el.data = telemetryData;
-    container.querySelector('#cadence-component-container').appendChild(el);
-
-    const heat = document.createElement('commit-heatmap');
-    heat.data = telemetryData.git;
-    container.querySelector('#cadence-component-container').appendChild(heat);
+    mountPage(container, {
+        tag: 'task-cadence',
+        title: '📈 Development Cadence',
+        maxWidth: '800px',
+        extraMounts: (inner) => {
+            const heat = document.createElement('commit-heatmap');
+            heat.data = telemetryData?.git;
+            inner.appendChild(heat);
+        },
+    });
 }
 
-function renderFlowPage(container) {
-	container.innerHTML = `
-		<div class="section-card" style="max-width: 1200px; margin: 0 auto;">
-			<h2>OpenSpec Change Flow</h2>
-			<p style="color: #9ca3af; margin-bottom: 20px;">Team-level flow and planning evidence. Planning health is not validation success.</p>
-			<div id="flow-component-container"></div>
-		</div>
-	`;
-	const el = document.createElement('flow-insights');
-	el.data = telemetryData;
-	container.querySelector('#flow-component-container').appendChild(el);
+function renderChangesPage(container) {
+    mountPage(container, {
+        tag: 'change-list',
+        title: 'OpenSpec Changes',
+        subtitle: 'Team-level flow and planning evidence. Planning health is not validation success.',
+    });
+}
+
+function renderArchivedPage(container) {
+    mountPage(container, {
+        tag: 'change-list',
+        title: 'Archived Changes',
+        subtitle: 'Completed OpenSpec changes with cycle time and planning health.',
+        mode: 'archived',
+    });
+}
+
+const VIEW_MODE_KEY = 'krokis.changeViewMode';
+
+function renderChangeDetail(container, changeName) {
+    const flow = telemetryData?.change_flow;
+    const change = flow?.changes?.find(c => c.name === changeName);
+    if (!flow || !change) {
+        container.innerHTML = `
+            <div class="section-card" style="max-width: 800px; margin: 0 auto;">
+                <h2>Change not found</h2>
+                <p style="color: #9ca3af;">No OpenSpec change named <code>${changeName.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c])}</code> in the current workspace.</p>
+                <p><a href="#/changes" class="nav-link">Back to Changes</a></p>
+            </div>
+        `;
+        return;
+    }
+    const artifacts = (flow.artifact_map && flow.artifact_map[changeName]) || [];
+    const hasProposal = artifacts.includes('proposal.md');
+    const otherCount = artifacts.filter(a => a !== 'proposal.md').length;
+    const canGraph = hasProposal && otherCount > 0;
+
+    let stored = 'graph';
+    try { stored = localStorage.getItem(VIEW_MODE_KEY) || 'graph'; } catch (e) { stored = 'graph'; }
+    const initialMode = canGraph ? stored : 'list';
+
+    container.innerHTML = `
+        <div class="section-card change-detail" style="max-width: 1200px; margin: 0 auto;">
+            <header class="change-detail-head">
+                <div>
+                    <a href="#/changes" class="change-detail-back">← All Changes</a>
+                    <h2>${changeName.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c])}</h2>
+                </div>
+                <div class="view-toggle" role="tablist" aria-label="View mode">
+                    <button class="view-toggle-btn" data-mode="list" type="button" role="tab" aria-selected="${initialMode === 'list'}">List</button>
+                    <button class="view-toggle-btn" data-mode="graph" type="button" role="tab" aria-selected="${initialMode === 'graph'}"${canGraph ? '' : ' disabled'}>Graph</button>
+                </div>
+            </header>
+            <div class="change-detail-body" id="change-detail-body"></div>
+        </div>
+    `;
+
+    const body = container.querySelector('#change-detail-body');
+    renderChangeDetailBody(body, change, artifacts, initialMode);
+
+    container.querySelectorAll('.view-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+            const mode = btn.dataset.mode;
+            container.querySelectorAll('.view-toggle-btn').forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
+            try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch (e) { /* ignore quota errors */ }
+            renderChangeDetailBody(body, change, artifacts, mode);
+        });
+    });
+}
+
+function renderChangeDetailBody(body, change, artifacts, mode) {
+    if (mode === 'graph') {
+        const graph = document.createElement('change-flow-graph');
+        graph.change = { ...change, artifacts };
+        body.replaceChildren(graph);
+        return;
+    }
+    const health = change.planning_health || {};
+    const rows = [
+        { label: 'Status', value: change.status },
+        { label: 'Created', value: change.created_date || '—' },
+        { label: 'Age', value: Number.isFinite(change.age_days) ? `${change.age_days} days` : '—' },
+        { label: 'Cycle time', value: Number.isFinite(change.cycle_time_days) ? `${change.cycle_time_days} days` : '—' },
+        { label: 'Proposal', value: health.proposal_present ? 'present' : 'absent' },
+        { label: 'Design', value: health.design_present ? 'present' : 'absent' },
+        { label: 'Spec deltas', value: health.specs_present ? 'present' : 'absent' },
+        { label: 'Tasks', value: health.tasks_present ? `${Number.isFinite(health.completed_tasks) ? health.completed_tasks : '—'} done / ${Number.isFinite(health.remaining_tasks) ? health.remaining_tasks : '—'} open` : 'absent' },
+    ];
+    body.innerHTML = `
+        <table class="change-detail-table">
+            <tbody>
+                ${rows.map(r => `<tr><th>${r.label}</th><td>${r.value}</td></tr>`).join('')}
+            </tbody>
+        </table>
+        <p style="color: #9ca3af; margin-top: 16px; font-size: 12px;">Artifacts: ${artifacts.length ? artifacts.join(', ') : 'none'}</p>
+    `;
 }
 
 async function renderOpenAPIPage(container) {
@@ -298,3 +461,4 @@ async function renderOpenAPIPage(container) {
         }
     }
 }
+/* touched */

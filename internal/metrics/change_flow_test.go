@@ -72,6 +72,51 @@ func TestGatherChangeFlowHandlesEmptyWorkspace(t *testing.T) {
 	}
 }
 
+func TestGatherChangeFlowPopulatesArtifactMap(t *testing.T) {
+	root := t.TempDir()
+	writeChangeFixture(t, filepath.Join(root, "populated"), "2026-07-10", true)
+	writeChangeFixture(t, filepath.Join(root, "sparse", ".openspec.yaml"), "2026-07-12", false)
+	// overwrite the sparse change to drop everything except .openspec.yaml
+	sparse := filepath.Join(root, "sparse")
+	mustWriteFile(t, filepath.Join(sparse, "proposal.md"), "only proposal\n")
+	// remove the design/tasks/specs that the fixture wrote
+	for _, name := range []string{"design.md", "tasks.md", "specs"} {
+		_ = os.RemoveAll(filepath.Join(sparse, name))
+	}
+
+	flow := gatherChangeFlow(root, time.Date(2026, time.July, 20, 12, 0, 0, 0, time.UTC))
+
+	populated, ok := flow.ArtifactMap["populated"]
+	if !ok {
+		t.Fatalf("populated change missing from artifact map: %+v", flow.ArtifactMap)
+	}
+	want := []string{"design.md", "proposal.md", "specs/flow/spec.md", "tasks.md"}
+	if !equalSlices(populated, want) {
+		t.Fatalf("populated artifacts = %v, want %v", populated, want)
+	}
+
+	sparseArtifacts, ok := flow.ArtifactMap["sparse"]
+	if !ok {
+		t.Fatalf("sparse change missing from artifact map: %+v", flow.ArtifactMap)
+	}
+	wantSparse := []string{"proposal.md"}
+	if !equalSlices(sparseArtifacts, wantSparse) {
+		t.Fatalf("sparse artifacts = %v, want %v", sparseArtifacts, wantSparse)
+	}
+}
+
+func equalSlices(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
 func TestGatherChangeFlowIgnoresMalformedArchiveDirectory(t *testing.T) {
 	root := t.TempDir()
 	writeChangeFixture(t, filepath.Join(root, "archive", "bad-finished-change"), "2026-07-01", false)

@@ -17,6 +17,7 @@ type ChangeFlowMetrics struct {
 	ActiveWIP         int                 `json:"active_wip"`
 	Changes           []ChangeFlowRecord  `json:"changes"`
 	MonthlyThroughput []MonthlyThroughput `json:"monthly_throughput"`
+	ArtifactMap       map[string][]string `json:"artifact_map"`
 }
 
 type ChangeFlowRecord struct {
@@ -44,7 +45,7 @@ type MonthlyThroughput struct {
 }
 
 func gatherChangeFlow(changeRoot string, now time.Time) ChangeFlowMetrics {
-	flow := ChangeFlowMetrics{Changes: []ChangeFlowRecord{}, MonthlyThroughput: []MonthlyThroughput{}}
+	flow := ChangeFlowMetrics{Changes: []ChangeFlowRecord{}, MonthlyThroughput: []MonthlyThroughput{}, ArtifactMap: map[string][]string{}}
 	entries, err := os.ReadDir(changeRoot)
 	if err != nil {
 		return flow
@@ -67,6 +68,7 @@ func gatherChangeFlow(changeRoot string, now time.Time) ChangeFlowMetrics {
 				if record, month, ok := archivedChangeRecord(filepath.Join(changeRoot, entry.Name(), archived.Name()), archived.Name()); ok {
 					flow.Changes = append(flow.Changes, record)
 					monthly[month]++
+					flow.ArtifactMap[record.Name] = collectArtifacts(filepath.Join(changeRoot, entry.Name(), archived.Name()))
 				}
 			}
 			continue
@@ -75,6 +77,7 @@ func gatherChangeFlow(changeRoot string, now time.Time) ChangeFlowMetrics {
 		record := changeRecord(filepath.Join(changeRoot, entry.Name()), entry.Name(), "active", now)
 		flow.Changes = append(flow.Changes, record)
 		flow.ActiveWIP++
+		flow.ArtifactMap[entry.Name()] = collectArtifacts(filepath.Join(changeRoot, entry.Name()))
 	}
 
 	for month, completed := range monthly {
@@ -175,6 +178,31 @@ func hasSpecFile(specRoot string) bool {
 		return nil
 	})
 	return found
+}
+
+// collectArtifacts returns the relative paths (slash-separated) of every
+// planning artifact inside a change directory: proposal.md, design.md,
+// tasks.md, and any file under specs/. Paths are sorted for stable output.
+func collectArtifacts(changePath string) []string {
+	var artifacts []string
+	for _, name := range []string{"proposal.md", "design.md", "tasks.md"} {
+		if fileExists(filepath.Join(changePath, name)) {
+			artifacts = append(artifacts, name)
+		}
+	}
+	specRoot := filepath.Join(changePath, "specs")
+	_ = filepath.Walk(specRoot, func(path string, info os.FileInfo, err error) error {
+		if err != nil || info.IsDir() || filepath.Ext(path) != ".md" {
+			return nil
+		}
+		rel, relErr := filepath.Rel(changePath, path)
+		if relErr == nil {
+			artifacts = append(artifacts, filepath.ToSlash(rel))
+		}
+		return nil
+	})
+	sort.Strings(artifacts)
+	return artifacts
 }
 
 func fileExists(path string) bool {

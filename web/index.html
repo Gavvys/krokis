@@ -42,11 +42,17 @@
                     </ul>
                 </div>
                 <div class="nav-section">
+                    <h3>Changes</h3>
+                    <ul id="changes-links">
+                        <li><a href="#/changes" class="nav-link">All Changes</a></li>
+                        <li id="archived-link" hidden><a href="#/changes/archived" class="nav-link">Archived</a></li>
+                    </ul>
+                </div>
+                <div class="nav-section">
                     <h3>Telemetry & Insights</h3>
                     <ul id="telemetry-links">
                         <li><a href="#/insights/health" class="nav-link">Project Health</a></li>
                         <li><a href="#/insights/cadence" class="nav-link">Task Cadence</a></li>
-						<li><a href="#/insights/flow" class="nav-link">Flow Insights</a></li>
                         <li><a href="#/insights/openapi" class="nav-link">API Specification</a></li>
                     </ul>
                 </div>
@@ -62,11 +68,13 @@
     </div>
 
     <!-- Load components -->
+    <script src="/components/_base.js"></script>
     <script src="/components/InfoBox.js"></script>
     <script src="/components/MetricsCard.js"></script>
     <script src="/components/TaskCadence.js"></script>
     <script src="/components/TestResults.js"></script>
-	<script src="/components/FlowInsights.js"></script>
+    <script src="/components/Changes.js"></script>
+    <script src="/components/ChangeFlowGraph.js"></script>
     <script src="/components/CommitHeatmap.js"></script>
     <!-- Main App Logic -->
     <script src="/app.js"></script>

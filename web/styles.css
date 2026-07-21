@@ -473,3 +473,103 @@ body {
 .api-spec-frame rapi-doc {
     --nav-accent-color: #3b82f6;
 }
+
+/* ----------------------------------------------------------------------- */
+/* 10. Change detail (per-change flow + planning health)                   */
+/* ----------------------------------------------------------------------- */
+
+.change-detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.change-detail-head h2 {
+    margin: 4px 0 0;
+    font-size: 22px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-primary);
+    word-break: break-all;
+}
+
+.change-detail-back {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.change-detail-back:hover {
+    text-decoration: underline;
+}
+
+.view-toggle {
+    display: inline-flex;
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    background: var(--glass-bg);
+    padding: 2px;
+    gap: 2px;
+}
+
+.view-toggle-btn {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 0;
+    padding: 6px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+.view-toggle-btn[aria-selected="true"] {
+    background: var(--bg-elevated, rgba(255, 255, 255, 0.08));
+    color: var(--text-primary);
+}
+
+.view-toggle-btn:disabled {
+    color: var(--text-tertiary, rgba(156, 163, 175, 0.4));
+    cursor: not-allowed;
+}
+
+.change-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.change-detail-table th,
+.change-detail-table td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 10px 12px;
+    text-align: left;
+}
+
+.change-detail-table th {
+    color: var(--text-secondary);
+    font-weight: 600;
+    width: 200px;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+}
+
+.change-detail-table td {
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.change-link {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.change-link:hover {
+    color: var(--accent);
+}

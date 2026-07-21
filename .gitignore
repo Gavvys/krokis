@@ -7,8 +7,8 @@ tmp/
 # Air live-reload artifacts
 .air/
 
-# Dependency directories
-node_modules/
+# Playwright CLI scratch space
+.playwright-cli/
 
 # Local Krokis insights (telemetry datasets)
 .krokis/insights/
