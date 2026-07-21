@@ -1,18 +1,4 @@
-class CommitHeatmap extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-    }
-
-    set data(val) {
-        this._data = val;
-        this.render();
-    }
-
-    connectedCallback() {
-        this.render();
-    }
-
+class CommitHeatmap extends KrokisElement {
     render() {
         if (!this._data || !Array.isArray(this._data.daily) || this._data.daily.length === 0) {
             this.shadowRoot.innerHTML = `

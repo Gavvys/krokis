@@ -1,18 +1,4 @@
-class TaskCadence extends HTMLElement {
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-    }
-
-    set data(val) {
-        this._data = val;
-        this.render();
-    }
-
-    connectedCallback() {
-        this.render();
-    }
-
+class TaskCadence extends KrokisElement {
     render() {
         if (!this._data) {
             this.shadowRoot.innerHTML = `<div style="color: #9ca3af; font-family: 'Outfit';">Loading cadence data...</div>`;
