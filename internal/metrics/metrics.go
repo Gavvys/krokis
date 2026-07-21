@@ -16,6 +16,7 @@ type TelemetryData struct {
 	Codebase   CodeMetrics       `json:"codebase"`
 	Quality    QualityMetrics    `json:"quality"`
 	ChangeFlow ChangeFlowMetrics `json:"change_flow"`
+	Coverage   CoverageMetrics   `json:"coverage"`
 }
 
 type GitMetrics struct {
@@ -87,6 +88,9 @@ func Gather(testFile, lintFile string) (*TelemetryData, error) {
 
 	// Gather local OpenSpec flow data. Missing OpenSpec folders produce an empty result.
 	data.ChangeFlow = gatherChangeFlow(filepath.Join("openspec", "changes"), time.Now())
+
+	// Gather spec-to-code coverage from local OpenSpec specs. Missing specs dir returns an empty result.
+	data.Coverage = gatherCoverage(filepath.Join("openspec", "specs"), ".")
 
 	return data, nil
 }

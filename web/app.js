@@ -170,6 +170,11 @@ const routes = [
         render: (container) => renderCadencePage(container),
     },
     {
+        match: (hash) => hash === '#/insights/coverage' ? {} : null,
+        title: () => 'Coverage · Krokis',
+        render: (container) => renderCoveragePage(container),
+    },
+    {
         match: (hash) => hash === '#/changes' ? {} : null,
         title: () => 'Changes · Krokis',
         render: (container) => renderChangesPage(container),
@@ -288,6 +293,14 @@ function renderCadencePage(container) {
             heat.data = telemetryData?.git;
             inner.appendChild(heat);
         },
+    });
+}
+
+function renderCoveragePage(container) {
+    mountPage(container, {
+        tag: 'coverage-report',
+        title: 'Spec Coverage',
+        subtitle: 'Implementation evidence for OpenSpec requirements, not validation pass/fail.',
     });
 }
 

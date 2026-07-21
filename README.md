@@ -51,6 +51,7 @@ Then open `http://localhost:8080`.
 | `#/insights/cadence` | Author breakdown, recent commits, and a 365-day commit heatmap. |
 | `#/changes` | Active OpenSpec work-in-progress, change age, cycle time, and planning health. |
 | `#/changes/archived` | Completed OpenSpec changes with completion date, cycle time, and planning health. |
+| `#/insights/coverage` | Spec-to-code coverage per OpenSpec requirement, classified as covered, partial, or uncovered. |
 | `#/insights/openapi` | Interactive RapiDoc viewer for the configured OpenAPI spec. |
 
 ## Contribution Notes
