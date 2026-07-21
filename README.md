@@ -49,7 +49,8 @@ Then open `http://localhost:8080`.
 | `#/wiki/<NAME>` | Rendered MDX wiki page. |
 | `#/insights/health` | Code quality, tests, and lint summary. |
 | `#/insights/cadence` | Author breakdown, recent commits, and a 365-day commit heatmap. |
-| `#/insights/flow` | OpenSpec work-in-progress, change age, cycle time, and planning health. |
+| `#/changes` | Active OpenSpec work-in-progress, change age, cycle time, and planning health. |
+| `#/changes/archived` | Completed OpenSpec changes with completion date, cycle time, and planning health. |
 | `#/insights/openapi` | Interactive RapiDoc viewer for the configured OpenAPI spec. |
 
 ## Contribution Notes
