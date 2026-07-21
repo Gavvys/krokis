@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"krokis/internal/config"
 	"krokis/internal/web"
 	"krokis/internal/wiki"
 
@@ -18,11 +17,7 @@ var serveCmd = &cobra.Command{
 	Short: "Start the local web server to host the Krokis dashboard",
 	Long:  `Launches a local embedded web server serving the project wiki and insights visual dashboard.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			os.Exit(1)
-		}
+		cfg := loadConfigOrDie()
 
 		// Rebuild wiki index on server start
 		if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
@@ -39,8 +34,7 @@ var serveCmd = &cobra.Command{
 			host = hostFlag
 		}
 
-		err = web.StartServer(port, host)
-		if err != nil {
+		if err := web.StartServer(port, host); err != nil {
 			fmt.Printf("Server failed: %v\n", err)
 			os.Exit(1)
 		}

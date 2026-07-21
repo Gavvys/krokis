@@ -36,7 +36,18 @@ Krokis runs as a standalone Go binary compiled from `main.go`. It has zero exter
     *   Downloads raw MDX documents from the backend and translates JSX tags (`<MetricsCard />`, `<InfoBox>`) to custom HTML Web Components.
     *   Uses CDNs to load `marked.js` and `prism.js` for lightweight browser markdown compilation.
     *   Loads `RapiDoc` dynamically to render OpenAPI specifications served at `/api/openapi`.
-	*   Renders `#/insights/flow` from local change-flow telemetry. Planning health shows artifact and task evidence; it does not claim OpenSpec validation passed.
+	*   Renders `#/changes` from local change-flow telemetry under the top-level `Changes` sidebar section. Planning health shows artifact and task evidence; it does not claim OpenSpec validation passed. The table on `#/changes` lists active changes only.
+	*   Renders `#/changes/archived` for completed OpenSpec changes with completion date, cycle time, and planning health. The `Archived` sidebar link is hidden when the workspace has no completed changes.
+	*   Renders `#/changes/<change>` with a per-change detail view that includes a list/graph toggle. The graph view is a hand-written inline SVG Web Component (`web/components/ChangeFlowGraph.js`) that maps proposal → design → spec deltas → tasks and re-renders on `themechange`. The toggle preference is stored under `krokis.changeViewMode` in `localStorage`. The deprecated routes `#/insights/flow` and `#/insights/flow/<change>` redirect to their new equivalents.
+	*   Client-side routing is table-driven: a `routes[]` array in `web/app.js` lists every route with a `match`, `title`, and `render` function, and a single dispatcher in `handleRoute` resolves the active route. Every dashboard Web Component extends `KrokisElement` (`web/components/_base.js`), which owns shadow DOM setup, the `data` and `mode` setters, the `themechange` listener, and the shared `escape` helper. The `mountPage` facade in `web/app.js` writes a `section-card` shell and mounts a custom element, replacing the previous per-page duplication.
+	*   The HTTP server uses a `withConfig` middleware in `internal/web/server.go` that loads the `config.Config` once per request and passes it to the inner handler, removing the load-or-respond-with-500 boilerplate from every API handler. The CLI uses a `loadConfigOrDie()` helper in `internal/cmd/helpers.go` so every command's `Run` function starts with one line. The `init` command uses a `scaffoldFile(path, content, label)` helper for the stat-write-print dance, and `doctor` runs a `[]check` table that the runner iterates over.
+
+### ADR 002: Change-flow artifact map in insights payload
+
+- **Status**: Approved
+- **Context**: The change-flow graph component needs to know which planning artifacts each change contains without a second HTTP round-trip.
+- **Decision**: Extend `ChangeFlowMetrics` with `ArtifactMap map[string][]string`, populated by `internal/metrics/change_flow.go` while it already walks the change directory. The map is additive: existing consumers that ignore unknown keys stay compatible.
+- **Consequences**: One new payload field, no new endpoints, no breaking changes. The component reads `flow.artifact_map[change.name]` and merges it with the per-change `planning_health` record.
 
 ## Design Decisions
 

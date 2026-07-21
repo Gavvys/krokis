@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"krokis/internal/config"
 	"krokis/internal/metrics"
 	"krokis/internal/wiki"
 	"os"
@@ -18,11 +17,7 @@ var insightsCmd = &cobra.Command{
 	Short: "Scan codebase metrics, git cadence, test and lint outputs",
 	Long:  `Runs telemetry analysis and writes aggregated datasets to .krokis/insights/`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			os.Exit(1)
-		}
+		cfg := loadConfigOrDie()
 
 		fmt.Println("Gathering project insights...")
 		data, err := metrics.Gather(cfg.Insights.Tests, cfg.Insights.Lints)

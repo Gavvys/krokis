@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"krokis/internal/config"
 
 	"github.com/spf13/cobra"
 )
@@ -13,11 +12,7 @@ var validateCmd = &cobra.Command{
 	Short: "Validate Krokis configuration and workspace directories",
 	Long:  `Validates the types and parameters in .krokis/config.toml, checking for any missing folders on disk.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			os.Exit(1)
-		}
+		cfg := loadConfigOrDie()
 
 		errs := cfg.Validate()
 		if len(errs) > 0 {

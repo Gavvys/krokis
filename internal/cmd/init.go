@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
 	"krokis/internal/config"
 	"krokis/internal/wiki"
 
@@ -23,7 +24,7 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("Initializing Krokis project structure...")
 
-		// 2. Load and write config
+		// 2. Load default and write config
 		cfg := config.Default()
 		if err := config.Save(cfg); err != nil {
 			fmt.Printf("Error creating config file: %v\n", err)
@@ -73,6 +74,17 @@ var initCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+}
+
+func scaffoldFile(path, content, label string) error {
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
+		return err
+	}
+	fmt.Printf("✓ %s\n", label)
+	return nil
 }
 
 func scaffoldWikiTemplates(wikiDir string) {
@@ -142,10 +154,7 @@ You can also embed the complete project health and git cadence widgets directly 
 	}
 
 	for filename, content := range templates {
-		path := filepath.Join(wikiDir, filename)
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			_ = os.WriteFile(path, []byte(content), 0644)
-		}
+		_ = scaffoldFile(filepath.Join(wikiDir, filename), content, fmt.Sprintf("Scaffolded %s", filename))
 	}
 }
 
@@ -216,11 +225,8 @@ Helps agents maintain commitment-based product development horizons.
 			return err
 		}
 		for filename, content := range files {
-			filePath := filepath.Join(skillDir, filename)
-			if _, err := os.Stat(filePath); os.IsNotExist(err) {
-				if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
-					return err
-				}
+			if err := scaffoldFile(filepath.Join(skillDir, filename), content, fmt.Sprintf("Scaffolded %s", filename)); err != nil {
+				return err
 			}
 		}
 	}
@@ -228,10 +234,6 @@ Helps agents maintain commitment-based product development horizons.
 }
 
 func scaffoldOpenAPISpec(path string) error {
-	if _, err := os.Stat(path); err == nil {
-		return nil // already exists
-	}
-
 	content := `openapi: 3.0.3
 info:
   title: Krokis Sample API
@@ -251,5 +253,5 @@ paths:
         '200':
           description: A list of wiki filename strings
 `
-	return os.WriteFile(path, []byte(content), 0644)
+	return scaffoldFile(path, content, fmt.Sprintf("Scaffolded sample OpenAPI spec in %s", path))
 }

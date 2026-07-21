@@ -5,67 +5,38 @@ import (
 	"krokis/internal/config"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
+
+const (
+	checkStatusOK   = "ok"
+	checkStatusWarn = "warn"
+	checkStatusFail = "fail"
+)
+
+type check struct {
+	name    string
+	status  string
+	message string
+}
 
 var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Check the health of the Krokis repository, configuration, and layout",
 	Long:  `Performs diagnostic checks on Git, OpenSpec, Krokis config, directories, and telemetry QA files.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		failed := false
 		fmt.Println("🏥 Running Krokis Doctor Diagnostics...")
 		fmt.Println()
 
-		// 1. Check Git
-		if _, err := os.Stat(".git"); err != nil {
-			fmt.Println("❌ [Git] No .git directory found. Krokis requires a Git-tracked workspace.")
-			failed = true
-		} else {
-			fmt.Println("✅ [Git] Repository found.")
-		}
-
-		// 2. Check OpenSpec
-		if _, err := os.Stat("openspec"); err != nil {
-			fmt.Println("⚠️  [OpenSpec] 'openspec' directory not found. Please run 'openspec init'.")
-		} else {
-			fmt.Println("✅ [OpenSpec] Directory structure found.")
-		}
-
-		// 3. Load Config
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Printf("❌ [Config] Failed to parse config.toml: %v\n", err)
-			failed = true
-		} else {
-			fmt.Println("✅ [Config] config.toml parsed successfully.")
-
-			// 4. Validate fields
-			errs := cfg.Validate()
-			if len(errs) > 0 {
-				fmt.Println("❌ [Config] Validation errors found:")
-				for _, e := range errs {
-					fmt.Printf("   - %v\n", e)
-				}
+		checks := buildDoctorChecks()
+		failed := false
+		for _, c := range checks {
+			fmt.Println(formatCheck(c))
+			if c.status == checkStatusFail {
 				failed = true
-			} else {
-				fmt.Println("✅ [Config] Fields structure is correct.")
 			}
-
-			// 5. Check workspace folders
-			warnings := cfg.CheckFolders()
-			if len(warnings) > 0 {
-				fmt.Println("⚠️  [Layout] Missing directories:")
-				for _, w := range warnings {
-					fmt.Printf("   - %v\n", w)
-				}
-			} else {
-				fmt.Println("✅ [Layout] Configured directories exist.")
-			}
-
-			// 6. Check QA reports
-			checkQAReports(cfg)
 		}
 
 		fmt.Println()
@@ -82,26 +53,113 @@ func init() {
 	rootCmd.AddCommand(doctorCmd)
 }
 
-func checkQAReports(cfg *config.Config) {
-	if cfg.Insights.Tests != "" {
-		if _, err := os.Stat(cfg.Insights.Tests); err != nil {
-			fmt.Printf("⚠️  [QA] Configured test file '%s' not found on disk. Run tests to generate it.\n", cfg.Insights.Tests)
+func buildDoctorChecks() []check {
+	checks := []check{
+		checkGitPresence(),
+		checkOpenSpecPresence(),
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		checks = append(checks, check{
+			name:    "Config",
+			status:  checkStatusFail,
+			message: fmt.Sprintf("Failed to parse config.toml: %v", err),
+		})
+		return checks
+	}
+	checks = append(checks, check{
+		name:    "Config",
+		status:  checkStatusOK,
+		message: "config.toml parsed successfully.",
+	})
+
+	if errs := cfg.Validate(); len(errs) > 0 {
+		checks = append(checks, check{
+			name:    "Config fields",
+			status:  checkStatusFail,
+			message: fmt.Sprintf("%d validation error(s): %v", len(errs), errs),
+		})
+	} else {
+		checks = append(checks, check{
+			name:    "Config fields",
+			status:  checkStatusOK,
+			message: "Fields structure is correct.",
+		})
+	}
+
+	if warnings := cfg.CheckFolders(); len(warnings) > 0 {
+		checks = append(checks, check{
+			name:    "Layout",
+			status:  checkStatusWarn,
+			message: fmt.Sprintf("Missing directories: %v", warnings),
+		})
+	} else {
+		checks = append(checks, check{
+			name:    "Layout",
+			status:  checkStatusOK,
+			message: "Configured directories exist.",
+		})
+	}
+
+	checks = append(checks, checkQAReports(cfg)...)
+	return checks
+}
+
+func checkGitPresence() check {
+	if _, err := os.Stat(".git"); err != nil {
+		return check{name: "Git", status: checkStatusFail, message: "No .git directory found. Krokis requires a Git-tracked workspace."}
+	}
+	return check{name: "Git", status: checkStatusOK, message: "Repository found."}
+}
+
+func checkOpenSpecPresence() check {
+	if _, err := os.Stat("openspec"); err != nil {
+		return check{name: "OpenSpec", status: checkStatusWarn, message: "'openspec' directory not found. Please run 'openspec init'."}
+	}
+	return check{name: "OpenSpec", status: checkStatusOK, message: "Directory structure found."}
+}
+
+func checkQAReports(cfg *config.Config) []check {
+	entries := []struct {
+		label string
+		path  string
+		hint  string
+	}{
+		{"Tests", cfg.Insights.Tests, "Run tests to generate it."},
+		{"Lints", cfg.Insights.Lints, "Run linting to generate it."},
+		{"OpenAPI", cfg.Insights.OpenAPI, "Run 'krokis init' to scaffold."},
+	}
+	checks := make([]check, 0, len(entries))
+	for _, e := range entries {
+		if e.path == "" {
+			continue
+		}
+		if _, err := os.Stat(e.path); err != nil {
+			checks = append(checks, check{
+				name:    "QA " + e.label,
+				status:  checkStatusWarn,
+				message: fmt.Sprintf("Configured %s file '%s' not found on disk. %s", strings.ToLower(e.label), e.path, e.hint),
+			})
 		} else {
-			fmt.Printf("✅ [QA] Mapped test results found: %s\n", filepath.Base(cfg.Insights.Tests))
+			checks = append(checks, check{
+				name:    "QA " + e.label,
+				status:  checkStatusOK,
+				message: fmt.Sprintf("Mapped %s found: %s", strings.ToLower(e.label), filepath.Base(e.path)),
+			})
 		}
 	}
-	if cfg.Insights.Lints != "" {
-		if _, err := os.Stat(cfg.Insights.Lints); err != nil {
-			fmt.Printf("⚠️  [QA] Configured lint file '%s' not found on disk. Run linting to generate it.\n", cfg.Insights.Lints)
-		} else {
-			fmt.Printf("✅ [QA] Mapped lint results found: %s\n", filepath.Base(cfg.Insights.Lints))
-		}
+	return checks
+}
+
+func formatCheck(c check) string {
+	switch c.status {
+	case checkStatusOK:
+		return fmt.Sprintf("✅ [%s] %s", c.name, c.message)
+	case checkStatusWarn:
+		return fmt.Sprintf("⚠️  [%s] %s", c.name, c.message)
+	case checkStatusFail:
+		return fmt.Sprintf("❌ [%s] %s", c.name, c.message)
 	}
-	if cfg.Insights.OpenAPI != "" {
-		if _, err := os.Stat(cfg.Insights.OpenAPI); err != nil {
-			fmt.Printf("⚠️  [QA] Configured OpenAPI spec file '%s' not found on disk. Run 'krokis init' to scaffold.\n", cfg.Insights.OpenAPI)
-		} else {
-			fmt.Printf("✅ [QA] Mapped OpenAPI spec found: %s\n", filepath.Base(cfg.Insights.OpenAPI))
-		}
-	}
+	return fmt.Sprintf("   [%s] %s", c.name, c.message)
 }

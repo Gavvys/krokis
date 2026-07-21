@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"krokis/internal/config"
 	"krokis/internal/wiki"
 
 	"github.com/spf13/cobra"
@@ -19,11 +18,7 @@ var wikiListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all wiki files",
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			os.Exit(1)
-		}
+		cfg := loadConfigOrDie()
 
 		files, err := wiki.List(cfg.Wiki.Directory)
 		if err != nil {
@@ -48,11 +43,7 @@ var wikiCreateCmd = &cobra.Command{
 	Short: "Create a new wiki file",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg, err := config.Load()
-		if err != nil {
-			fmt.Printf("Error loading config: %v\n", err)
-			os.Exit(1)
-		}
+		cfg := loadConfigOrDie()
 
 		filename, err := wiki.Create(args[0], cfg.Wiki.Directory)
 		if err != nil {

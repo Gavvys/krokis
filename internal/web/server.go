@@ -16,6 +16,19 @@ import (
 // Global reference to embedded frontend files (assigned from main/cmd)
 var EmbeddedFiles embed.FS
 
+// withConfig wraps a config-aware handler, loading the config once per request
+// and writing a 500 response on load failure before invoking the inner handler.
+func withConfig(handler func(cfg *config.Config, w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cfg, err := config.Load()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		handler(cfg, w, r)
+	}
+}
+
 // StartServer spins up the HTTP server serving the dashboard and APIs
 func StartServer(port int, host string) error {
 	// Subtree standard fs
@@ -27,12 +40,7 @@ func StartServer(port int, host string) error {
 	mux := http.NewServeMux()
 
 	// 1. API - Get project insights JSON
-	mux.HandleFunc("/api/insights", func(w http.ResponseWriter, r *http.Request) {
-		cfg, err := config.Load()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	mux.HandleFunc("/api/insights", withConfig(func(cfg *config.Config, w http.ResponseWriter, r *http.Request) {
 		path := filepath.Join(cfg.Insights.Directory, "health.json")
 		data, err := os.ReadFile(path)
 		if err != nil {
@@ -47,15 +55,10 @@ func StartServer(port int, host string) error {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write(data)
-	})
+	}))
 
 	// 1.5. API - Get OpenAPI Spec
-	mux.HandleFunc("/api/openapi", func(w http.ResponseWriter, r *http.Request) {
-		cfg, err := config.Load()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	mux.HandleFunc("/api/openapi", withConfig(func(cfg *config.Config, w http.ResponseWriter, r *http.Request) {
 		if cfg.Insights.OpenAPI == "" {
 			http.Error(w, "openapi spec not configured", http.StatusBadRequest)
 			return
@@ -78,15 +81,10 @@ func StartServer(port int, host string) error {
 		}
 		w.Header().Set("Content-Type", contentType)
 		_, _ = w.Write(data)
-	})
+	}))
 
 	// 2. API - Get wiki list
-	mux.HandleFunc("/api/wiki", func(w http.ResponseWriter, r *http.Request) {
-		cfg, err := config.Load()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	mux.HandleFunc("/api/wiki", withConfig(func(cfg *config.Config, w http.ResponseWriter, r *http.Request) {
 		files, err := wiki.List(cfg.Wiki.Directory)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -94,24 +92,19 @@ func StartServer(port int, host string) error {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(files)
-	})
+	}))
 
 	// 3. API - Get raw wiki content
-	mux.HandleFunc("/api/wiki/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/wiki/", withConfig(func(cfg *config.Config, w http.ResponseWriter, r *http.Request) {
 		name := strings.TrimPrefix(r.URL.Path, "/api/wiki/")
 		if name == "" {
 			http.Error(w, "missing wiki name", http.StatusBadRequest)
 			return
 		}
-		cfg, err := config.Load()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
 		upperName := strings.ToUpper(name)
 		var path string
-		
+
 		// Map canonical uppercase references to their root file paths
 		canonicals := map[string]string{
 			"AGENTS":         "AGENTS.md",
@@ -143,7 +136,7 @@ func StartServer(port int, host string) error {
 		}
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		_, _ = w.Write(data)
-	})
+	}))
 
 	// 4. Static files handler (SPA fallback for index.html)
 	fileServer := http.FileServer(http.FS(publicFS))
