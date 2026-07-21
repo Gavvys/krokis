@@ -4,12 +4,12 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 
 ## Now
 
-- Improve decision-ready local project insights, starting with OpenSpec work flow and planning-health visibility.
+- **Spec-to-code coverage indicators**: surface which OpenSpec requirements have implementation evidence (file:function references) and which do not, so users can see drift between specs and code at a glance.
 
 ## Queued
 
-- **Extended visual component library**: Add commit activity heatmaps, spec-to-code coverage indicators, and lint violation treemaps.
-- **Wiki content enrichment**: Improve documentation discovery and diagram support without making the wiki the canonical home for root master files.
+- **Lint violation treemaps**: visualize lint violations by file and severity as a treemap on the dashboard.
+- **Wiki content enrichment**: improve documentation discovery and diagram support without making the wiki the canonical home for root master files.
 
 ## Exploring
 
@@ -23,3 +23,10 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 - Cross-compilation CI pipelines and binary package manager tapes (e.g. Homebrew).
 - Multi-store registered OpenSpec environment dashboards.
 - CLI Custom Hook Runner: Expose `krokis hook run <event>` mapping events to config.toml executions.
+
+## Shipped
+
+- **OpenSpec workflow visibility** (2026-07-20): `change-flow-insights`, `visualize-change-flow-as-svg-graph` (`#/changes/<name>` SVG graph), and `add-archived-changes-page` surface local OpenSpec work-in-progress, planning health, and history as first-class dashboard sections.
+- **Component reuse foundation** (2026-07-20): `KrokisElement` base class, `mountPage` facade, and table-driven router under `introduce-web-component-base-class-and-route-table`.
+- **Backend helpers** (2026-07-21): `withConfig` middleware, `loadConfigOrDie`, `scaffoldFile`, and a doctor check table under `introduce-config-middleware-and-scaffolding-helpers`.
+- **Commit activity heatmap** (2026-07-20): trailing 365-day commit activity on the Task Cadence page.
