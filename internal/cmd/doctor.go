@@ -27,30 +27,39 @@ var doctorCmd = &cobra.Command{
 	Short: "Check the health of the Krokis repository, configuration, and layout",
 	Long:  `Performs diagnostic checks on Git, OpenSpec, Krokis config, directories, and telemetry QA files.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("🏥 Running Krokis Doctor Diagnostics...")
-		fmt.Println()
-
-		checks := buildDoctorChecks()
-		failed := false
-		for _, c := range checks {
-			fmt.Println(formatCheck(c))
-			if c.status == checkStatusFail {
-				failed = true
-			}
-		}
-
-		fmt.Println()
-		if failed {
-			fmt.Println("❌ Krokis Doctor found critical issues. Please resolve them above.")
+		failures := runDoctorChecks()
+		if failures > 0 {
 			os.Exit(1)
-		} else {
-			fmt.Println("🎉 Krokis diagnostics complete! Everything looks healthy.")
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(doctorCmd)
+}
+
+// runDoctorChecks runs the full diagnostic check table, prints each result,
+// and returns the number of failing checks. Caller decides the exit code.
+func runDoctorChecks() int {
+	fmt.Println("🏥 Running Krokis Doctor Diagnostics...")
+	fmt.Println()
+
+	checks := buildDoctorChecks()
+	failures := 0
+	for _, c := range checks {
+		fmt.Println(formatCheck(c))
+		if c.status == checkStatusFail {
+			failures++
+		}
+	}
+
+	fmt.Println()
+	if failures > 0 {
+		fmt.Println("❌ Krokis Doctor found critical issues. Please resolve them above.")
+	} else {
+		fmt.Println("🎉 Krokis diagnostics complete! Everything looks healthy.")
+	}
+	return failures
 }
 
 func buildDoctorChecks() []check {

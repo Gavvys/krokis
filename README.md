@@ -22,6 +22,8 @@ go build -o krokis .
 
 Then open `http://localhost:8080`.
 
+`krokis init` is idempotent. Re-running it on a workspace that already has Krokis artifacts fills the missing pieces without overwriting anything, and finishes by auto-invoking `krokis doctor`. Use `--skip-doctor` to suppress the auto-invocation or `--verbose` to see every directory created.
+
 ## Table of Contents
 
 - [Highlights](#highlights)
@@ -35,7 +37,7 @@ Then open `http://localhost:8080`.
 
 | Command | Purpose |
 | --- | --- |
-| `krokis init` | Scaffold `.krokis/` and a sample OpenAPI spec. |
+| `krokis init` | Scaffold `.krokis/`, wiki templates, agent skills, and a sample OpenAPI spec. Idempotent; auto-invokes `krokis doctor`. |
 | `krokis insights` | Generate git, quality, and OpenSpec change-flow telemetry. |
 | `krokis doctor` | Validate workspace, OpenSpec, and telemetry. |
 | `krokis serve` | Run the embedded HTTP dashboard. |

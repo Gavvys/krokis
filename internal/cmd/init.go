@@ -14,80 +14,128 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initialize Krokis project structure and scaffolding",
-	Long:  `Creates the .krokis folder, default configurations, wiki templates, and scaffolds workspace Agent Skills.`,
+	Long:  `Creates the .krokis folder, default configurations, wiki templates, and scaffolds workspace Agent Skills. Idempotent: re-running fills missing pieces without overwriting. Auto-invokes 'krokis doctor' after scaffolding unless --skip-doctor is set.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// 1. Verify git repo
-		if _, err := os.Stat(".git"); os.IsNotExist(err) {
-			fmt.Println("Error: No .git directory found. Please run 'git init' first.")
+		failures := runInit(initVerbose, initSkipDoctor)
+		if failures > 0 {
 			os.Exit(1)
 		}
+	},
+}
 
-		fmt.Println("Initializing Krokis project structure...")
+// runInit performs the init scaffolding and (optionally) doctor invocation.
+// Returns the doctor failure count; the caller decides the exit code.
+func runInit(verbose, skipDoctor bool) int {
+	// 1. Verify git repo
+	if _, err := os.Stat(".git"); os.IsNotExist(err) {
+		fmt.Println("Error: No .git directory found. Please run 'git init' first.")
+		os.Exit(1)
+	}
 
-		// 2. Load default and write config
-		cfg := config.Default()
+	fmt.Println("Initializing Krokis project structure...")
+
+	// 2. Write config (skip if already exists)
+	cfg := config.Default()
+	configPath := filepath.Join(".krokis", "config.toml")
+	if _, err := os.Stat(configPath); err == nil {
+		fmt.Printf("↻ Skipped %s (already exists)\n", configPath)
+	} else {
 		if err := config.Save(cfg); err != nil {
 			fmt.Printf("Error creating config file: %v\n", err)
 			os.Exit(1)
 		}
 		fmt.Println("✓ Created .krokis/config.toml")
+	}
 
-		// 3. Create wiki dir & templates
-		wikiDir := cfg.Wiki.Directory
-		if err := os.MkdirAll(wikiDir, 0755); err != nil {
-			fmt.Printf("Error creating wiki directory: %v\n", err)
-			os.Exit(1)
-		}
-		
-		scaffoldWikiTemplates(wikiDir)
-		fmt.Printf("✓ Scaffolded wiki templates in %s/\n", wikiDir)
+	// 3. Create wiki dir & templates
+	wikiDir := cfg.Wiki.Directory
+	if _, err := mkdirVerbose(wikiDir, verbose); err != nil {
+		fmt.Printf("Error creating wiki directory: %v\n", err)
+		os.Exit(1)
+	}
 
-		// 4. Scaffold Agent Skills
-		activeAgentDir := getActiveAgentSkillsDir()
-		if err := scaffoldAgentSkills(activeAgentDir); err != nil {
-			fmt.Printf("Error scaffolding agent skills: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("✓ Scaffolded Krokis skills in %s/\n", activeAgentDir)
+	scaffoldWikiTemplates(wikiDir, verbose)
 
-		// 5. Scaffold sample openapi.yaml
-		openapiPath := cfg.Insights.OpenAPI
-		if openapiPath == "" {
-			openapiPath = "openapi.yaml"
-		}
-		if err := scaffoldOpenAPISpec(openapiPath); err != nil {
-			fmt.Printf("Error scaffolding openapi.yaml: %v\n", err)
-			os.Exit(1)
-		}
-		fmt.Printf("✓ Scaffolded sample OpenAPI spec in %s\n", openapiPath)
+	// 4. Scaffold Agent Skills
+	activeAgentDir := getActiveAgentSkillsDir()
+	if _, err := mkdirVerbose(activeAgentDir, verbose); err != nil {
+		fmt.Printf("Error creating agent skills directory: %v\n", err)
+		os.Exit(1)
+	}
+	if err := scaffoldAgentSkills(activeAgentDir, verbose); err != nil {
+		fmt.Printf("Error scaffolding agent skills: %v\n", err)
+		os.Exit(1)
+	}
 
-		// 6. Build initial Wiki Index
-		if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
-			fmt.Printf("Warning: Failed to create wiki index on init: %v\n", err)
-		} else {
-			fmt.Println("✓ Scaffolded wiki index WIKI_INDEX.mdx")
-		}
+	// 5. Scaffold sample openapi.yaml
+	openapiPath := cfg.Insights.OpenAPI
+	if openapiPath == "" {
+		openapiPath = "openapi.yaml"
+	}
+	if err := scaffoldOpenAPISpec(openapiPath); err != nil {
+		fmt.Printf("Error scaffolding openapi.yaml: %v\n", err)
+		os.Exit(1)
+	}
 
-		fmt.Println("\nKrokis Initialized Successfully! Run 'krokis serve' to open the dashboard.")
-	},
+	// 6. Build initial Wiki Index
+	if err := wiki.BuildIndex(cfg.Wiki.Directory); err != nil {
+		fmt.Printf("Warning: Failed to create wiki index on init: %v\n", err)
+	} else {
+		fmt.Println("✓ Scaffolded wiki index WIKI_INDEX.mdx")
+	}
+
+	fmt.Println("\nKrokis Initialized Successfully! Run 'krokis serve' to open the dashboard.")
+
+	// 7. Auto-invoke doctor unless suppressed
+	if skipDoctor {
+		fmt.Println("\nSkipped doctor (--skip-doctor).")
+		return 0
+	}
+	fmt.Println()
+	return runDoctorChecks()
 }
+
+var (
+	initVerbose    bool
+	initSkipDoctor bool
+)
 
 func init() {
 	rootCmd.AddCommand(initCmd)
+	initCmd.Flags().BoolVarP(&initVerbose, "verbose", "v", false, "Print every directory created alongside the files")
+	initCmd.Flags().BoolVar(&initSkipDoctor, "skip-doctor", false, "Skip the automatic 'krokis doctor' invocation after scaffolding")
 }
 
 func scaffoldFile(path, content, label string) error {
 	if _, err := os.Stat(path); err == nil {
+		fmt.Printf("↻ Skipped %s (already exists)\n", path)
 		return nil
 	}
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		return err
 	}
-	fmt.Printf("✓ %s\n", label)
+	fmt.Printf("✓ Created %s\n", label)
 	return nil
 }
 
-func scaffoldWikiTemplates(wikiDir string) {
+// mkdirVerbose creates dir if missing. When verbose is true, it prints a line
+// for any directory it just created. Returns true if the directory was newly
+// created, false if it already existed.
+func mkdirVerbose(dir string, verbose bool) (bool, error) {
+	info, err := os.Stat(dir)
+	if err == nil && info.IsDir() {
+		return false, nil
+	}
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return false, err
+	}
+	if verbose {
+		fmt.Printf("+ Created dir %s\n", dir)
+	}
+	return true, nil
+}
+
+func scaffoldWikiTemplates(wikiDir string, verbose bool) {
 	templates := map[string]string{
 		"DEPENDENCY_MAP.mdx": `---
 title: Dependency Map
@@ -170,7 +218,7 @@ func getActiveAgentSkillsDir() string {
 	return ".agents/skills"
 }
 
-func scaffoldAgentSkills(skillsRoot string) error {
+func scaffoldAgentSkills(skillsRoot string, verbose bool) error {
 	skills := map[string]map[string]string{
 		"krokis-insights": {
 			"SKILL.md": `---
@@ -221,7 +269,7 @@ Helps agents maintain commitment-based product development horizons.
 
 	for skillName, files := range skills {
 		skillDir := filepath.Join(skillsRoot, skillName)
-		if err := os.MkdirAll(skillDir, 0755); err != nil {
+		if _, err := mkdirVerbose(skillDir, verbose); err != nil {
 			return err
 		}
 		for filename, content := range files {
