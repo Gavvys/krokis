@@ -10,6 +10,8 @@ metadata:
   generatedBy: "1.6.0"
 ---
 
+> **Discipline**: read `krokis/references/plan-discipline.md` (in this repo's `.agents/skills/`) before authoring any Krokis plan or OpenSpec change artifact. The discipline is the single source of truth for plan quality.
+
 Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
 **IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create OpenSpec artifacts (proposals, designs, specs) if the user asks—that's capturing thinking, not implementing.

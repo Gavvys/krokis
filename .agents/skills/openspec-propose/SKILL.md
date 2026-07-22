@@ -10,6 +10,8 @@ metadata:
   generatedBy: "1.6.0"
 ---
 
+> **Discipline**: read `krokis/references/plan-discipline.md` (in this repo's `.agents/skills/`) before authoring any Krokis plan or OpenSpec change artifact. The discipline is the single source of truth for plan quality.
+
 Propose a new change - create the change and generate all artifacts in one step.
 
 I'll create a change with artifacts:

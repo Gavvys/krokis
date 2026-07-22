@@ -10,6 +10,8 @@ metadata:
   generatedBy: "1.6.0"
 ---
 
+> **Discipline**: read `krokis/references/plan-discipline.md` (in this repo's `.agents/skills/`) before authoring any Krokis plan or OpenSpec change artifact. The discipline is the single source of truth for plan quality.
+
 Sync delta specs from a change to main specs.
 
 This is an **agent-driven** operation - you will read delta specs and directly edit main specs to apply the changes. This allows intelligent merging (e.g., adding a scenario without copying the entire requirement).
