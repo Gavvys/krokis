@@ -34,3 +34,12 @@ Open questions live ONLY at the bottom of the plan as a single `## Open Question
 ## 7. Clarify vs. assume
 
 Do not ask how to build the plan. Explore and present the approach and options in the plan itself. Ask a clarifying question only when an ambiguity would change the design and you cannot resolve it from the code; use the normal ask-user-question flow and batch 2-4 high-leverage questions before finalizing. Otherwise state the assumption explicitly in the plan and proceed, and keep anything unresolved in the single bottom `## Open Questions` block.
+
+## 8. Evidence vs. inference
+
+Every non-trivial claim in `proposal.md`, `design.md`, and `tasks.md` is one of two kinds, and the plan must mark which.
+
+- **Evidence** is a claim grounded in a concrete artifact: a local file path with line number (`web/app.js:142`), a spec section (`openspec/specs/plan-discipline/spec.md`), a code symbol, a documentation URL, or an established convention. A bare statement with no pointer is **not** evidence, even if the agent is "pretty sure" — promote it to inference.
+- **Inference** is the agent's own reasoning, prediction, trade-off judgement, or assumption. Inference is allowed and welcome for design choices, predictions, and "I think this is the right call" statements. It just has to be marked so a reviewer can challenge it without having to re-derive the evidence.
+
+Tag inline with `[E: pointer]` or `[I: one-sentence reason]`, OR group claims under `## Evidence` and `## Inferences` subsections per artifact. Pick one style and use it consistently within an artifact. Do not leave high-leverage claims untagged.
