@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -219,66 +220,36 @@ func getActiveAgentSkillsDir() string {
 }
 
 func scaffoldAgentSkills(skillsRoot string, verbose bool) error {
-	skills := map[string]map[string]string{
-		"krokis-insights": {
-			"SKILL.md": `---
-name: krokis-insights
-description: Analyzes git cadence, metrics, and project quality reports.
----
-# Krokis Insights Skill
-This skill executes the krokis telemetry collection.
-
-## Usage
-Run the following command to update telemetry:
-` + "```bash" + `
-krokis insights
-` + "```" + `
-`,
-		},
-		"krokis-wiki": {
-			"SKILL.md": `---
-name: krokis-wiki
-description: Scaffolds or syncs SNAKE_CASE wiki articles in MDX.
----
-# Krokis Wiki Skill
-This skill helps agents document system architecture.
-
-## Usage
-Run the following command to create a new wiki document:
-` + "```bash" + `
-krokis wiki create <NAME>
-` + "```" + `
-`,
-		},
-		"roadmap-coordination": {
-			"SKILL.md": `---
-name: roadmap-coordination
-description: Maintain the project's global ROADMAP.md using the Now, Queued, Exploring, and Parked horizons. Use when prioritizing future product directions, recording deferred ideas, promoting an idea toward an OpenSpec change, or reviewing roadmap scope against PRODUCT.md and active changes.
----
-# Roadmap Coordination Skill
-Helps agents maintain commitment-based product development horizons.
-
-## Horizons
-- **Now**: current focus. Link to active OpenSpec change.
-- **Queued**: committed next work with clear scope.
-- **Exploring**: plausible ideas needing validation or user check-in.
-- **Parked**: passive idea bank.
-`,
-		},
-	}
-
-	for skillName, files := range skills {
-		skillDir := filepath.Join(skillsRoot, skillName)
-		if _, err := mkdirVerbose(skillDir, verbose); err != nil {
+	const rootDir = "skill_template/krokis"
+	return fs.WalkDir(krokisSkillFS, rootDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
 			return err
 		}
-		for filename, content := range files {
-			if err := scaffoldFile(filepath.Join(skillDir, filename), content, fmt.Sprintf("Scaffolded %s", filename)); err != nil {
+		if d.IsDir() {
+			rel, err := filepath.Rel(rootDir, path)
+			if err != nil || rel == "." {
+				return nil
+			}
+			target := filepath.Join(skillsRoot, "krokis", rel)
+			if _, err := mkdirVerbose(target, verbose); err != nil {
 				return err
 			}
+			return nil
 		}
-	}
-	return nil
+		data, err := krokisSkillFS.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(rootDir, path)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(skillsRoot, "krokis", rel)
+		if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+			return err
+		}
+		return scaffoldFile(target, string(data), rel)
+	})
 }
 
 func scaffoldOpenAPISpec(path string) error {

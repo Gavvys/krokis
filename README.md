@@ -37,7 +37,7 @@ Then open `http://localhost:8080`.
 
 | Command | Purpose |
 | --- | --- |
-| `krokis init` | Scaffold `.krokis/`, wiki templates, agent skills, and a sample OpenAPI spec. Idempotent; auto-invokes `krokis doctor`. |
+| `krokis init` | Scaffold `.krokis/`, wiki templates, the consolidated `krokis` Agent Skill (`.agents/skills/krokis/` with `SKILL.md`, `workflows/`, `references/`), and a sample OpenAPI spec. Idempotent; auto-invokes `krokis doctor`. |
 | `krokis insights` | Generate git, quality, and OpenSpec change-flow telemetry. |
 | `krokis doctor` | Validate workspace, OpenSpec, and telemetry. |
 | `krokis serve` | Run the embedded HTTP dashboard. |

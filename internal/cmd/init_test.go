@@ -22,7 +22,8 @@ func TestRunInitCreatesFilesOnFreshWorkspace(t *testing.T) {
 		".krokis/config.toml",
 		".krokis/wiki/DEPENDENCY_MAP.mdx",
 		".krokis/wiki/USER_MANUAL.mdx",
-		".agents/skills/krokis-insights/SKILL.md",
+		".agents/skills/krokis/SKILL.md",
+		".agents/skills/krokis/references/plan-discipline.md",
 		".krokis/wiki/WIKI_INDEX.mdx",
 		"openapi.yaml",
 	} {
