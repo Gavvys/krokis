@@ -26,5 +26,5 @@ Krokis visual dashboard adopts a high-end, responsive dark-mode theme utilizing 
 ## Layout & Components
 
 -   **Sidebar**: Width `280px`, contains Krokis logo, project wiki list, and insights/spec links.
--   **Glassmorphic Cards**: `background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05);`.
+-   **Glassmorphic Cards**: `background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05);`.
 -   **RapiDoc OpenAPI Spec Panel**: Styled to match theme (`bg-color="#0b0f19"`, `text-color="#f3f4f6"`, `primary-color="#3b82f6"`). Loaded full-pane with padding `0` to optimize API route scrolling.

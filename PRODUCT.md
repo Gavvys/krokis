@@ -7,7 +7,7 @@ Krokis is a lightweight, portable project management CLI tool built on top of Op
 - **Lightweight & Portable**: Small footprint Go binary, zero local runtime dependencies (no npm/Node required at runtime).
 - **Agent-Friendly**: Discoverable skills, standard folder conventions, non-interactive execution modes, and packed context logs.
 - **Human-Auditable**: A stunning, premium visual dashboard displaying active specs, development cadence, code quality, and API specs.
-- **Git/Jujutsu Tracked**: Fully tracked via standard Git metadata, fitting seamlessly into colocated git/jj workspaces.
+- **Git Tracked**: Fully tracked via standard Git metadata, fitting seamlessly into colocated Git workspaces.
 
 ## Scope & Features
 
