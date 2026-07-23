@@ -19,8 +19,6 @@ type WikiConfig struct {
 
 type InsightsConfig struct {
 	Directory string `toml:"directory"`
-	Tests     string `toml:"tests"`
-	Lints     string `toml:"lints"`
 	OpenAPI   string `toml:"openapi"`
 }
 

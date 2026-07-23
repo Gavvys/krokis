@@ -25,7 +25,7 @@ type check struct {
 var doctorCmd = &cobra.Command{
 	Use:   "doctor",
 	Short: "Check the health of the Krokis repository, configuration, and layout",
-	Long:  `Performs diagnostic checks on Git, OpenSpec, Krokis config, directories, and telemetry QA files.`,
+	Long:  `Performs diagnostic checks on Git, OpenSpec, Krokis config, directories, and telemetry files.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		failures := runDoctorChecks()
 		if failures > 0 {
@@ -135,8 +135,6 @@ func checkQAReports(cfg *config.Config) []check {
 		path  string
 		hint  string
 	}{
-		{"Tests", cfg.Insights.Tests, "Run tests to generate it."},
-		{"Lints", cfg.Insights.Lints, "Run linting to generate it."},
 		{"OpenAPI", cfg.Insights.OpenAPI, "Run 'krokis init' to scaffold."},
 	}
 	checks := make([]check, 0, len(entries))

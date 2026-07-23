@@ -165,7 +165,7 @@ Welcome to the interactive project dashboard! Krokis helps agents maintain OpenS
 You can run these commands directly in your terminal:
 
 - **Scaffold**: <code>krokis init</code> setups folders, configs, and Agent Skills.
-- **Insights**: <code>krokis insights</code> scans Git cadence and QA metrics reports.
+- **Insights**: <code>krokis insights</code> scans Git cadence and codebase metrics.
 - **Diagnostics**: <code>krokis doctor</code> audits repository layout and setup health.
 - **Validate**: <code>krokis validate</code> verifies configuration file correctness.
 - **Serve**: <code>krokis serve</code> launches this local visual dashboard.
@@ -197,8 +197,7 @@ You can also embed the complete project health and git cadence widgets directly 
 #### Git Cadence Graph (&lt;TaskCadence /&gt;):
 <TaskCadence />
 
-#### Unit Test Summary (&lt;TestResults /&gt;):
-<TestResults />
+
 `,
 	}
 

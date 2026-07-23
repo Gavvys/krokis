@@ -9,7 +9,7 @@ Use this workflow when you need a current snapshot of workspace health or want t
 
 ## When to run
 
-- After implementing one or more OpenSpec changes and before archiving, to confirm the change graph, spec coverage, and lint signals look right.
+- After implementing one or more OpenSpec changes and before archiving, to confirm the change graph and spec coverage look right.
 - When the user asks "how is the project doing?" or asks for a status update.
 - Before proposing a new change, to confirm the new work is not already represented by an active change.
 

@@ -8,7 +8,6 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 
 ## Queued
 
-- **Lint violation treemaps**: visualize lint violations by file and severity as a treemap on the dashboard.
 - **Wiki content enrichment**: improve documentation discovery and diagram support without making the wiki the canonical home for root master files.
 
 ## Exploring

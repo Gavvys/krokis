@@ -14,13 +14,13 @@ import (
 
 var insightsCmd = &cobra.Command{
 	Use:   "insights",
-	Short: "Scan codebase metrics, git cadence, test and lint outputs",
+	Short: "Scan codebase metrics, git cadence, and change flow",
 	Long:  `Runs telemetry analysis and writes aggregated datasets to .krokis/insights/`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := loadConfigOrDie()
 
 		fmt.Println("Gathering project insights...")
-		data, err := metrics.Gather(cfg.Insights.Tests, cfg.Insights.Lints)
+		data, err := metrics.Gather()
 		if err != nil {
 			fmt.Printf("Error gathering insights: %v\n", err)
 			os.Exit(1)
@@ -68,11 +68,6 @@ func init() {
 }
 
 func generateMDXSummary(data *metrics.TelemetryData) string {
-	testPassRate := 0.0
-	if data.Quality.Tests.Total > 0 {
-		testPassRate = float64(data.Quality.Tests.Passed) / float64(data.Quality.Tests.Total) * 100
-	}
-
 	return fmt.Sprintf(`---
 title: Project Insights Overview
 author: Krokis CLI
@@ -92,11 +87,6 @@ Telemetry scan run at %s.
 <MetricsCard value="%d" label="Total Commits" />
 <MetricsCard value="%d" label="Recent Commits (14d)" />
 
-## Quality & Tests
-
-<MetricsCard value="%.1f%%" label="Test Pass Rate (%d/%d passed)" />
-<MetricsCard value="%d" label="Active Lint Violations" />
-
 ## OpenSpec Change Flow
 
 <MetricsCard value="%d" label="Active OpenSpec Changes" />
@@ -105,8 +95,7 @@ Detailed age, cycle-time, throughput, and planning-health data is available in t
 
 `, timeNowFormatted(), data.Codebase.TotalLines, data.Codebase.TotalFiles,
 		data.Git.TotalCommits, data.Git.RecentCommits,
-		testPassRate, data.Quality.Tests.Passed, data.Quality.Tests.Total,
-		data.Quality.LintIssues, data.ChangeFlow.ActiveWIP)
+		data.ChangeFlow.ActiveWIP)
 }
 
 func timeNowFormatted() string {
