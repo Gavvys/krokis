@@ -18,20 +18,22 @@ Krokis visual dashboard adopts the Material 3 dark theme using design tokens def
 
 ## Visual Palette
 
+Dark theme is the default; light theme values are listed alongside where they differ.
+
 - **Backgrounds**:
-    *   Surface: `#121316` (M3 dark surface, used by the main content area).
-    *   Surface container low: `#1a1c1f` (M3 nav-rail surface, used by the sidebar).
-    *   Surface container: `#1e2024` (M3 card surface, used by `.section-card` and component panels).
+    *   Surface: dark `#121316` / light `#fbf8fd` (used by the main content area).
+    *   Surface container low: dark `#1a1c1f` / light `#f5f2f8` (M3 nav-rail surface, used by the sidebar).
+    *   Surface container: dark `#1e2024` / light `#efedf1` (M3 card surface, used by `.section-card` and component panels).
 - **Accents**:
-    *   Primary: `#82b1ff` (M3 dark primary on blue). Used for interactive accents, links, active states, and the brand color.
-    *   Primary container: `#00468f` (used as the background of active nav links and badges).
+    *   Primary: dark `#82b1ff` / light `#0b57d0` (M3 primary on blue, dark and light schemes).
+    *   Primary container: dark `#00468f` / light `#d8e2ff` (used as the background of active nav links and badges).
 - **Status Indicators**:
-    *   Tertiary (tip / attention): `#c8b8ff`.
-    *   Error (caution / danger): `#ffb4ab` (text) on `#93000a` (container).
-    *   Secondary (covered / success): `#b4c6ff` (text) on `#324a82` (container).
+    *   Tertiary (tip / attention): dark `#c8b8ff` / light `#745571`.
+    *   Error (caution / danger): dark `#ffb4ab` on `#93000a` / light `#ba1a1a` on `#ffdad6`.
+    *   Secondary (covered / success): dark `#b4c6ff` on `#324a82` / light `#595e72` on `#dde1f9`.
 - **Borders**:
-    *   Outline variant: `#44474f` (standard separator).
-    *   Outline: `#8e9099` (interactive element border, e.g. outlined button).
+    *   Outline variant: dark `#44474f` / light `#c7c5d0` (standard separator).
+    *   Outline: dark `#8e9099` / light `#777680` (interactive element border, e.g. outlined button).
 
 ## Typography
 
@@ -58,4 +60,13 @@ Krokis visual dashboard adopts the Material 3 dark theme using design tokens def
 
 ## Light mode
 
-Out of scope. The dashboard is dark-mode only. Adding a light theme is a follow-up change that would require a parallel set of light-mode color tokens and a toggle or `prefers-color-scheme` handler.
+The dashboard supports both dark and light themes. The dark token set is the default (`:root` selector) and the light token set lives under `:root[data-theme="light"]` in the same `web/tokens.css` file. Typography, shape, elevation, motion, state-layer, and spacing tokens are identical between themes; only the color tokens differ.
+
+### Toggle behavior
+
+- A `#theme-toggle` button (sun icon in dark, moon icon in light) sits in the sidebar header next to the refresh button.
+- Clicking the toggle writes `data-theme` to `<html>`, persists the choice to `localStorage.krokis.theme`, and dispatches a `themechange` event on `document`.
+- A small synchronous script in `<head>` (before any stylesheet loads) reads `localStorage.krokis.theme` and sets `data-theme` on `<html>`, so the resolved theme is correct on first paint and there is no flash of wrong theme.
+- The first visit with no stored value defaults to dark. The dashboard does not use `prefers-color-scheme`; only the explicit toggle changes the theme.
+- `KrokisElement` listens for the `themechange` event and re-runs `render()`, so components that read CSS custom properties inside their shadow DOM update automatically. No component logic change is required.
+- The RapiDoc OpenAPI panel re-applies its color attributes when the user toggles while on `#/insights/openapi`. The attribute set lives in `RAPI_DOC_THEME` in `web/app.js` and is keyed by `dark` or `light`.

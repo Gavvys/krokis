@@ -6,6 +6,95 @@ let currentRoute = '';
 let telemetryData = null;
 let wikiFiles = [];
 
+function getTheme() {
+    const attr = document.documentElement.getAttribute('data-theme');
+    return attr === 'light' ? 'light' : 'dark';
+}
+
+function setTheme(theme) {
+    const next = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+        localStorage.setItem('krokis.theme', next);
+    } catch (e) {
+        // localStorage unavailable; the in-memory change still applies.
+    }
+    document.dispatchEvent(new CustomEvent('themechange'));
+}
+
+function syncToggleUI() {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+    const sun = btn.querySelector('.theme-icon-sun');
+    const moon = btn.querySelector('.theme-icon-moon');
+    const theme = getTheme();
+    if (theme === 'light') {
+        sun.hidden = true;
+        moon.hidden = false;
+        btn.setAttribute('aria-label', 'Switch to dark theme');
+    } else {
+        sun.hidden = false;
+        moon.hidden = true;
+        btn.setAttribute('aria-label', 'Switch to light theme');
+    }
+}
+
+const RAPI_DOC_ATTRIBUTES = {
+    'spec-url': '/api/openapi',
+    'theme': 'dark',
+    'regular-font': 'Roboto, sans-serif',
+    'mono-font': 'JetBrains Mono, monospace',
+    'nav-item-spacing': 'relaxed',
+    'layout': 'column',
+    'render-style': 'view',
+    'schema-style': 'tree',
+    'default-schema-tab': 'schema',
+    'show-header': 'false',
+    'show-info': 'true',
+    'allow-spec-url-change': 'false',
+    'allow-spec-file-load': 'false',
+    'allow-authentication': 'false',
+    'allow-try': 'true',
+    'api-key-name': 'Authorization',
+    'api-key-location': 'header',
+    'style': 'height: 100%; width: 100%; display: block;',
+};
+
+const RAPI_DOC_THEME = {
+    dark: {
+        'bg-color': '#121316',
+        'text-color': '#e3e2e6',
+        'primary-color': '#82b1ff',
+        'nav-bg-color': '#1a1c1f',
+        'nav-text-color': '#c5c6d0',
+        'nav-hover-bg-color': '#1e2024',
+        'nav-hover-text-color': '#e3e2e6',
+    },
+    light: {
+        'bg-color': '#fbf8fd',
+        'text-color': '#1b1b1f',
+        'primary-color': '#0b57d0',
+        'nav-bg-color': '#f5f2f8',
+        'nav-text-color': '#46464f',
+        'nav-hover-bg-color': '#efedf1',
+        'nav-hover-text-color': '#1b1b1f',
+    },
+};
+
+function rapiDocAttributes(theme) {
+    const t = theme === 'light' ? 'light' : 'dark';
+    return { ...RAPI_DOC_ATTRIBUTES, ...RAPI_DOC_THEME[t] };
+}
+
+function applyRapiDocAttributes(theme) {
+    const el = document.querySelector('rapi-doc');
+    if (!el) return;
+    const attrs = rapiDocAttributes(theme);
+    for (const [k, v] of Object.entries(attrs)) {
+        el.setAttribute(k, v);
+    }
+}
+
 async function initApp() {
     // 1. Fetch telemetry
     await fetchTelemetry();
@@ -15,7 +104,7 @@ async function initApp() {
 
     // 3. Setup router
     window.addEventListener('hashchange', handleRoute);
-    
+
     // Set initial route or default to home/first wiki
     if (!window.location.hash) {
         const hasIndex = wikiFiles.some(f => f === 'WIKI_INDEX.mdx');
@@ -23,6 +112,18 @@ async function initApp() {
     } else {
         handleRoute();
     }
+
+    // Theme toggle
+    syncToggleUI();
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+        setTheme(getTheme() === 'light' ? 'dark' : 'light');
+    });
+    document.addEventListener('themechange', () => {
+        syncToggleUI();
+        if (currentRoute === '#/insights/openapi') {
+            requestAnimationFrame(() => applyRapiDocAttributes(getTheme()));
+        }
+    });
 
     // Refresh button
     document.getElementById('refresh-btn').addEventListener('click', async () => {
@@ -382,6 +483,10 @@ function renderChangeDetailBody(body, change, artifacts, mode) {
 }
 
 async function renderOpenAPIPage(container) {
+    const attrs = rapiDocAttributes(getTheme());
+    const attrString = Object.entries(attrs)
+        .map(([k, v]) => `                    ${k}="${String(v).replace(/"/g, '&quot;')}"`)
+        .join('\n');
     container.innerHTML = `
         <div class="api-spec-page">
             <header class="api-spec-header">
@@ -396,31 +501,7 @@ async function renderOpenAPIPage(container) {
             </header>
             <div class="api-spec-frame">
                 <rapi-doc
-                    spec-url="/api/openapi"
-                    theme="dark"
-                    bg-color="#121316"
-                    text-color="#e3e2e6"
-                    primary-color="#82b1ff"
-                    regular-font="Roboto, sans-serif"
-                    mono-font="JetBrains Mono, monospace"
-                    nav-bg-color="#1a1c1f"
-                    nav-text-color="#c5c6d0"
-                    nav-hover-bg-color="#1e2024"
-                    nav-hover-text-color="#e3e2e6"
-                    nav-item-spacing="relaxed"
-                    layout="column"
-                    render-style="view"
-                    schema-style="tree"
-                    default-schema-tab="schema"
-                    show-header="false"
-                    show-info="true"
-                    allow-spec-url-change="false"
-                    allow-spec-file-load="false"
-                    allow-authentication="false"
-                    allow-try="true"
-                    api-key-name="Authorization"
-                    api-key-location="header"
-                    style="height: 100%; width: 100%; display: block;"
+${attrString}
                 ></rapi-doc>
             </div>
         </div>
@@ -452,4 +533,4 @@ async function renderOpenAPIPage(container) {
         }
     }
 }
-/* touched */
+

@@ -1,15 +1,17 @@
 /* ==========================================================================
-   Krokis Material 3 Design Tokens (dark)
+   Krokis Material 3 Design Tokens
    Source of truth for every style in the dashboard.
    Categories:
-     1. Color (Material 3 dark, primary key = blue)
+     1. Color (Material 3 dark on :root, light on :root[data-theme="light"])
      2. Typography (Roboto family, M3 type scale)
      3. Shape (M3 corner-radius scale)
      4. Elevation (M3 5-level box-shadow tokens)
      5. Motion (M3 standard easing + duration scale)
      6. State layers (M3 8/10/12/16% primary overlays)
      7. Spacing (4dp grid)
-   Light mode is intentionally out of scope; see design notes.
+   The dark scope is the default; the light scope is activated by
+   data-theme="light" on <html>. Typography, shape, elevation, motion,
+   state-layer, and spacing are identical between themes.
    ========================================================================== */
 
 :root {
@@ -188,4 +190,54 @@
     --md-sys-spacing-10: 40px;
     --md-sys-spacing-12: 48px;
     --md-sys-spacing-16: 64px;
+}
+
+/* ==========================================================================
+   Material 3 Light Theme
+   Activated by data-theme="light" on <html>. Same token names as the dark
+   scope above. Typography, shape, elevation, motion, state-layer, and spacing
+   are inherited from the dark scope and intentionally not redefined here.
+   ========================================================================== */
+
+:root[data-theme="light"] {
+    --md-sys-color-primary: #0b57d0;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #d8e2ff;
+    --md-sys-color-on-primary-container: #001a41;
+
+    --md-sys-color-secondary: #595e72;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #dde1f9;
+    --md-sys-color-on-secondary-container: #161b2c;
+
+    --md-sys-color-tertiary: #745571;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #ffd7fa;
+    --md-sys-color-on-tertiary-container: #2b1229;
+
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+
+    --md-sys-color-background: #fbf8fd;
+    --md-sys-color-on-background: #1b1b1f;
+    --md-sys-color-surface: #fbf8fd;
+    --md-sys-color-on-surface: #1b1b1f;
+    --md-sys-color-surface-variant: #e3e1ec;
+    --md-sys-color-on-surface-variant: #46464f;
+
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f5f2f8;
+    --md-sys-color-surface-container: #efedf1;
+    --md-sys-color-surface-container-high: #e9e7eb;
+    --md-sys-color-surface-container-highest: #e3e1e5;
+
+    --md-sys-color-outline: #777680;
+    --md-sys-color-outline-variant: #c7c5d0;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-inverse-surface: #303034;
+    --md-sys-color-inverse-on-surface: #f2f0f4;
+    --md-sys-color-inverse-primary: #adc6ff;
 }
