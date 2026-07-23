@@ -130,7 +130,7 @@ async function handleRoute() {
     });
 
     const container = document.getElementById('content-container');
-    container.innerHTML = '<div style="color: #9ca3af;">Loading content...</div>';
+    container.innerHTML = '<div style="color: var(--md-sys-color-on-surface-variant, #c5c6d0);">Loading content...</div>';
 
     // OpenAPI page owns its own padding/scroll via .api-spec-page
     container.style.padding = (hash === '#/insights/openapi') ? '0' : '40px';
@@ -158,11 +158,6 @@ const routes = [
         },
         title: (params) => `${formatWikiTitle(params.name)} · Krokis`,
         render: (container, params) => renderWikiPage(params.name, container),
-    },
-    {
-        match: (hash) => hash === '#/insights/health' ? {} : null,
-        title: () => 'Project Quality · Krokis',
-        render: (container) => renderHealthPage(container),
     },
     {
         match: (hash) => hash === '#/insights/cadence' ? {} : null,
@@ -205,7 +200,7 @@ async function renderWikiPage(name, container) {
     try {
         const res = await fetch(`/api/wiki/${name}`);
         if (!res.ok) {
-            container.innerHTML = `<div style="color: #ef4444;">Error: Wiki article '${name}' not found.</div>`;
+            container.innerHTML = `<div style="color: var(--md-sys-color-error, #ffb4ab);">Error: Wiki article '${name}' not found.</div>`;
             return;
         }
 
@@ -224,8 +219,7 @@ async function renderWikiPage(name, container) {
             .replace(/<InfoBox\s+type="([^"]+)"\s*>/g, '<info-box type="$1">')
             .replace(/<\/InfoBox>/g, '</info-box>')
             .replace(/<MetricsCard\s+value="([^"]+)"\s+label="([^"]+)"\s*\/>/g, '<metrics-card value="$1" label="$2"></metrics-card>')
-            .replace(/<TaskCadence\s*\/>/g, '<task-cadence-wrapper></task-cadence-wrapper>')
-            .replace(/<TestResults\s*\/>/g, '<test-results-wrapper></test-results-wrapper>');
+            .replace(/<TaskCadence\s*\/>/g, '<task-cadence-wrapper></task-cadence-wrapper>');
 
         // Render Markdown
         container.innerHTML = `<div class="markdown-body">${marked.parse(processedMD)}</div>`;
@@ -238,18 +232,10 @@ async function renderWikiPage(name, container) {
             cadWrapper.replaceWith(el);
         }
 
-        const testWrapper = container.querySelector('test-results-wrapper');
-        if (testWrapper) {
-            const el = document.createElement('test-results');
-            el.data = telemetryData;
-            testWrapper.replaceWith(el);
-        }
-
-        // Code block highlight
         Prism.highlightAllUnder(container);
 
     } catch (e) {
-        container.innerHTML = `<div style="color: #ef4444;">Error loading article: ${e.message}</div>`;
+        container.innerHTML = `<div style="color: var(--md-sys-color-error, #ffb4ab);">Error loading article: ${e.message}</div>`;
     }
 }
 
@@ -257,7 +243,7 @@ function mountPage(container, opts) {
     const { tag, title, subtitle, mode, maxWidth, extraMounts } = opts;
     const width = maxWidth || '1200px';
     const subtitleHtml = subtitle
-        ? `<p style="color: #9ca3af; margin-bottom: 20px;">${subtitle}</p>`
+        ? `<p style="color: var(--md-sys-color-on-surface-variant, #c5c6d0); margin-bottom: var(--md-sys-spacing-5, 20px);">${subtitle}</p>`
         : '';
     container.innerHTML = `
         <div class="section-card" style="max-width: ${width}; margin: 0 auto;">
@@ -273,14 +259,6 @@ function mountPage(container, opts) {
     inner.appendChild(el);
     if (typeof extraMounts === 'function') extraMounts(inner, el);
     return { inner, el };
-}
-
-function renderHealthPage(container) {
-    mountPage(container, {
-        tag: 'test-results',
-        title: '📊 Code Quality Overview',
-        maxWidth: '600px',
-    });
 }
 
 function renderCadencePage(container) {
@@ -330,7 +308,7 @@ function renderChangeDetail(container, changeName) {
         container.innerHTML = `
             <div class="section-card" style="max-width: 800px; margin: 0 auto;">
                 <h2>Change not found</h2>
-                <p style="color: #9ca3af;">No OpenSpec change named <code>${changeName.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c])}</code> in the current workspace.</p>
+                <p style="color: var(--md-sys-color-on-surface-variant, #c5c6d0);">No OpenSpec change named <code>${changeName.replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c])}</code> in the current workspace.</p>
                 <p><a href="#/changes" class="nav-link">Back to Changes</a></p>
             </div>
         `;
@@ -399,7 +377,7 @@ function renderChangeDetailBody(body, change, artifacts, mode) {
                 ${rows.map(r => `<tr><th>${r.label}</th><td>${r.value}</td></tr>`).join('')}
             </tbody>
         </table>
-        <p style="color: #9ca3af; margin-top: 16px; font-size: 12px;">Artifacts: ${artifacts.length ? artifacts.join(', ') : 'none'}</p>
+        <p style="color: var(--md-sys-color-on-surface-variant, #c5c6d0); margin-top: var(--md-sys-spacing-4, 16px); font-size: var(--md-sys-typescale-body-small-size, 12px);">Artifacts: ${artifacts.length ? artifacts.join(', ') : 'none'}</p>
     `;
 }
 
@@ -420,15 +398,15 @@ async function renderOpenAPIPage(container) {
                 <rapi-doc
                     spec-url="/api/openapi"
                     theme="dark"
-                    bg-color="#0b0f19"
-                    text-color="#f3f4f6"
-                    primary-color="#3b82f6"
-                    regular-font="Open Sans, sans-serif"
+                    bg-color="#121316"
+                    text-color="#e3e2e6"
+                    primary-color="#82b1ff"
+                    regular-font="Roboto, sans-serif"
                     mono-font="JetBrains Mono, monospace"
-                    nav-bg-color="#0d1322"
-                    nav-text-color="#9ca3af"
-                    nav-hover-bg-color="rgba(255,255,255,0.04)"
-                    nav-hover-text-color="#f3f4f6"
+                    nav-bg-color="#1a1c1f"
+                    nav-text-color="#c5c6d0"
+                    nav-hover-bg-color="#1e2024"
+                    nav-hover-text-color="#e3e2e6"
                     nav-item-spacing="relaxed"
                     layout="column"
                     render-style="view"

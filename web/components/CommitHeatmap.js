@@ -18,11 +18,11 @@ class CommitHeatmap extends KrokisElement {
         const totals = this.computeTotals(daily);
 
         const heatColors = (count) => {
-            if (count === 0) return 'background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06);';
-            if (count <= 2) return 'background: rgba(59,130,246,0.22); border-color: rgba(59,130,246,0.35);';
-            if (count <= 4) return 'background: rgba(59,130,246,0.45); border-color: rgba(59,130,246,0.55);';
-            if (count <= 7) return 'background: rgba(59,130,246,0.7); border-color: rgba(59,130,246,0.85);';
-            return 'background: #3b82f6; border-color: #60a5fa;';
+            if (count === 0) return 'background: var(--md-sys-color-surface-container-high, #292b2f); border-color: var(--md-sys-color-outline-variant, #44474f);';
+            if (count <= 2) return 'background: color-mix(in srgb, var(--md-sys-color-primary, #82b1ff) 30%, transparent); border-color: color-mix(in srgb, var(--md-sys-color-primary, #82b1ff) 45%, transparent);';
+            if (count <= 4) return 'background: color-mix(in srgb, var(--md-sys-color-primary, #82b1ff) 55%, transparent); border-color: color-mix(in srgb, var(--md-sys-color-primary, #82b1ff) 65%, transparent);';
+            if (count <= 7) return 'background: color-mix(in srgb, var(--md-sys-color-primary, #82b1ff) 80%, transparent); border-color: var(--md-sys-color-primary, #82b1ff);';
+            return 'background: var(--md-sys-color-primary, #82b1ff); border-color: var(--md-sys-color-primary, #82b1ff);';
         };
 
         const cells = weeks.map(week => `
@@ -147,37 +147,43 @@ class CommitHeatmap extends KrokisElement {
     styles() {
         return `
             .heatmap-wrap {
-                font-family: 'Open Sans', sans-serif;
-                color: #f3f4f6;
+                font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                color: var(--md-sys-color-on-surface, #e3e2e6);
                 display: flex;
                 flex-direction: column;
-                gap: 14px;
+                gap: var(--md-sys-spacing-4, 14px);
             }
             .heatmap-head {
                 display: flex;
                 align-items: flex-start;
                 justify-content: space-between;
-                gap: 20px;
+                gap: var(--md-sys-spacing-5, 20px);
                 flex-wrap: wrap;
             }
             .heatmap-title {
-                font-size: 16px;
-                font-weight: 600;
-                color: #60a5fa;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                font-size: var(--md-sys-typescale-title-medium-size, 16px);
+                line-height: var(--md-sys-typescale-title-medium-line, 24px);
+                font-weight: var(--md-sys-typescale-title-medium-weight, 600);
+                color: var(--md-sys-color-primary, #82b1ff);
+                border-bottom: 1px solid var(--md-sys-color-outline-variant, #44474f);
                 padding-bottom: 6px;
                 margin-bottom: 6px;
             }
             .heatmap-subtitle {
-                font-size: 13px;
-                color: #9ca3af;
+                font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                font-size: var(--md-sys-typescale-body-small-size, 12px);
+                line-height: var(--md-sys-typescale-body-small-line, 16px);
+                color: var(--md-sys-color-on-surface-variant, #c5c6d0);
             }
             .heatmap-legend {
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
-                font-size: 11px;
-                color: #9ca3af;
+                font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                font-size: var(--md-sys-typescale-label-small-size, 11px);
+                line-height: var(--md-sys-typescale-label-small-line, 16px);
+                color: var(--md-sys-color-on-surface-variant, #c5c6d0);
             }
             .heatmap-legend-label {
                 margin: 0 2px;
@@ -195,8 +201,8 @@ class CommitHeatmap extends KrokisElement {
                 gap: 3px;
                 padding-top: 22px;
                 font-size: 10px;
-                color: #6b7280;
-                font-family: 'JetBrains Mono', monospace;
+                color: var(--md-sys-color-on-surface-variant, #c5c6d0);
+                font-family: var(--md-sys-typescale-font-mono, monospace);
             }
             .heatmap-y-cell {
                 grid-row-start: var(--row);
@@ -216,8 +222,8 @@ class CommitHeatmap extends KrokisElement {
                 height: 16px;
                 margin-bottom: 6px;
                 font-size: 10px;
-                color: #6b7280;
-                font-family: 'JetBrains Mono', monospace;
+                color: var(--md-sys-color-on-surface-variant, #c5c6d0);
+                font-family: var(--md-sys-typescale-font-mono, monospace);
             }
             .heatmap-x-label {
                 white-space: nowrap;
@@ -237,7 +243,7 @@ class CommitHeatmap extends KrokisElement {
             .heatmap-cell {
                 width: 13px;
                 height: 13px;
-                border-radius: 3px;
+                border-radius: var(--md-sys-shape-corner-extra-small, 4px);
                 border: 1px solid transparent;
                 cursor: default;
             }

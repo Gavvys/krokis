@@ -5,25 +5,18 @@ class InfoBox extends KrokisElement {
             const type = this.getAttribute('type') || 'info';
             this._title = this.getAttribute('title') || this.capitalize(type);
 
-            let color = '#3b82f6';
-            let bg = 'rgba(59, 130, 246, 0.05)';
-            let border = 'rgba(59, 130, 246, 0.2)';
+            let color = 'var(--md-sys-color-primary, #82b1ff)';
+            let bg = 'var(--md-sys-color-surface-container, #1e2024)';
             let icon = 'ℹ️';
 
             if (type === 'tip') {
-                color = '#10b981';
-                bg = 'rgba(16, 185, 129, 0.05)';
-                border = 'rgba(16, 185, 129, 0.2)';
+                color = 'var(--md-sys-color-tertiary, #c8b8ff)';
                 icon = '💡';
             } else if (type === 'warning') {
-                color = '#f59e0b';
-                bg = 'rgba(245, 158, 11, 0.05)';
-                border = 'rgba(245, 158, 11, 0.2)';
+                color = 'var(--md-sys-color-error, #ffb4ab)';
                 icon = '⚠️';
             } else if (type === 'caution') {
-                color = '#ef4444';
-                bg = 'rgba(239, 68, 68, 0.05)';
-                border = 'rgba(239, 68, 68, 0.2)';
+                color = 'var(--md-sys-color-error, #ffb4ab)';
                 icon = '🚨';
             }
 
@@ -31,35 +24,40 @@ class InfoBox extends KrokisElement {
                 <style>
                     .box {
                         background-color: ${bg};
-                        border: 1px solid ${border};
+                        border: 1px solid var(--md-sys-color-outline-variant, #44474f);
                         border-left: 4px solid ${color};
-                        border-radius: 8px;
-                        padding: 16px;
-                        margin: 20px 0;
-                        font-family: 'Open Sans', sans-serif;
-                        color: #f3f4f6;
+                        border-radius: var(--md-sys-shape-corner-small, 8px);
+                        padding: var(--md-sys-spacing-4, 16px);
+                        margin: var(--md-sys-spacing-5, 20px) 0;
+                        font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                        color: var(--md-sys-color-on-surface, #e3e2e6);
                         display: flex;
-                        gap: 12px;
+                        gap: var(--md-sys-spacing-3, 12px);
                     }
                     .icon {
                         font-size: 20px;
+                        color: ${color};
                         user-select: none;
+                        font-weight: 700;
                     }
                     .content {
                         flex: 1;
                     }
                     .title {
-                        font-weight: 600;
+                        font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                        font-weight: var(--md-sys-typescale-label-large-weight, 600);
                         color: ${color};
-                        margin-bottom: 4px;
-                        font-size: 14px;
+                        margin-bottom: var(--md-sys-spacing-1, 4px);
+                        font-size: var(--md-sys-typescale-label-large-size, 14px);
+                        line-height: var(--md-sys-typescale-label-large-line, 20px);
                         text-transform: uppercase;
-                        letter-spacing: 0.5px;
+                        letter-spacing: var(--md-sys-typescale-label-large-tracking, 0.1px);
                     }
                     .text {
-                        font-size: 14px;
-                        line-height: 1.5;
-                        color: #d1d5db;
+                        font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                        font-size: var(--md-sys-typescale-body-medium-size, 14px);
+                        line-height: var(--md-sys-typescale-body-medium-line, 20px);
+                        color: var(--md-sys-color-on-surface-variant, #c5c6d0);
                     }
                     ::slotted(*) {
                         margin: 0;

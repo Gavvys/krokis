@@ -99,18 +99,18 @@ class ChangeFlowGraph extends KrokisElement {
 
     styles() {
         return `
-            :host { display: block; font-family: 'Open Sans', sans-serif; color: var(--text, #f3f4f6); }
-            .graph-wrap { display: flex; flex-direction: column; gap: 12px; }
+            :host { display: block; font-family: var(--md-sys-typescale-font, system-ui, sans-serif); color: var(--md-sys-color-on-surface, #e3e2e6); }
+            .graph-wrap { display: flex; flex-direction: column; gap: var(--md-sys-spacing-3, 12px); }
             .graph-head { display: flex; flex-direction: column; gap: 4px; }
-            .graph-title { color: var(--accent, #60a5fa); font-size: 16px; font-weight: 600; }
-            .graph-subtitle { color: var(--muted, #9ca3af); font-size: 12px; }
+            .graph-title { color: var(--md-sys-color-primary, #82b1ff); font-size: var(--md-sys-typescale-title-medium-size, 16px); line-height: var(--md-sys-typescale-title-medium-line, 24px); font-weight: var(--md-sys-typescale-title-medium-weight, 600); }
+            .graph-subtitle { color: var(--md-sys-color-on-surface-variant, #c5c6d0); font-size: var(--md-sys-typescale-body-small-size, 12px); }
             .graph-canvas { width: 100%; overflow-x: auto; }
             svg { width: 100%; min-width: 640px; height: auto; }
-            .cfg-rect { fill: var(--surface, rgba(255,255,255,0.04)); stroke: var(--border, rgba(255,255,255,0.12)); stroke-width: 1; }
-            .cfg-label { fill: var(--text, #f3f4f6); font-size: 13px; font-weight: 600; text-anchor: middle; font-family: 'Open Sans', sans-serif; }
-            .cfg-badge { fill: var(--accent, #60a5fa); font-size: 18px; font-weight: 700; text-anchor: middle; font-family: 'JetBrains Mono', monospace; }
-            .cfg-edge { fill: none; stroke: var(--accent, #60a5fa); stroke-width: 1.5; opacity: 0.7; }
-            .empty { color: var(--muted, #9ca3af); font-size: 14px; padding: 12px 0; }
+            .cfg-rect { fill: var(--md-sys-color-surface-container, #1e2024); stroke: var(--md-sys-color-outline-variant, #44474f); stroke-width: 1; }
+            .cfg-label { fill: var(--md-sys-color-on-surface, #e3e2e6); font-size: 13px; font-weight: 600; text-anchor: middle; font-family: var(--md-sys-typescale-font, system-ui, sans-serif); }
+            .cfg-badge { fill: var(--md-sys-color-primary, #82b1ff); font-size: 18px; font-weight: 700; text-anchor: middle; font-family: var(--md-sys-typescale-font-mono, monospace); }
+            .cfg-edge { fill: none; stroke: var(--md-sys-color-primary, #82b1ff); stroke-width: 1.5; opacity: 0.7; }
+            .empty { color: var(--md-sys-color-on-surface-variant, #c5c6d0); font-size: var(--md-sys-typescale-body-medium-size, 14px); padding: var(--md-sys-spacing-3, 12px) 0; }
         `;
     }
 }

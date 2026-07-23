@@ -7,13 +7,14 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- Marked.js (Markdown parsing) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Prism.js (Syntax highlighting) -->
     <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
     <!-- Custom styling -->
+    <link rel="stylesheet" href="/tokens.css">
     <link rel="stylesheet" href="/styles.css">
     <!-- RapiDoc (OpenAPI UI Web Component) -->
     <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
@@ -51,7 +52,6 @@
                 <div class="nav-section">
                     <h3>Telemetry & Insights</h3>
                     <ul id="telemetry-links">
-                        <li><a href="#/insights/health" class="nav-link">Project Health</a></li>
                         <li><a href="#/insights/cadence" class="nav-link">Task Cadence</a></li>
                         <li><a href="#/insights/coverage" class="nav-link">Coverage</a></li>
                         <li><a href="#/insights/openapi" class="nav-link">API Specification</a></li>
@@ -73,7 +73,6 @@
     <script src="/components/InfoBox.js"></script>
     <script src="/components/MetricsCard.js"></script>
     <script src="/components/TaskCadence.js"></script>
-    <script src="/components/TestResults.js"></script>
     <script src="/components/Changes.js"></script>
     <script src="/components/ChangeFlowGraph.js"></script>
     <script src="/components/CommitHeatmap.js"></script>

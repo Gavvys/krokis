@@ -1,14 +1,13 @@
 class TaskCadence extends KrokisElement {
     render() {
         if (!this._data) {
-            this.shadowRoot.innerHTML = `<div style="color: #9ca3af; font-family: 'Outfit';">Loading cadence data...</div>`;
+            this.shadowRoot.innerHTML = `<div style="color: var(--md-sys-color-on-surface-variant, #c5c6d0); font-family: var(--md-sys-typescale-font, system-ui, sans-serif);">Loading cadence data...</div>`;
             return;
         }
 
         const commits = this._data.history || [];
         const authors = this._data.authors || [];
 
-        // Build list of authors
         let authorRows = authors.map(a => `
             <div class="author-row">
                 <span class="author-name">${a.name}</span>
@@ -19,7 +18,6 @@ class TaskCadence extends KrokisElement {
             </div>
         `).join('');
 
-        // Build list of recent history commits
         let commitRows = commits.slice(0, 10).map(c => `
             <div class="commit-item">
                 <div class="commit-header">
@@ -34,88 +32,92 @@ class TaskCadence extends KrokisElement {
         this.shadowRoot.innerHTML = `
             <style>
                 .container {
-                    font-family: 'Open Sans', sans-serif;
-                    color: #f3f4f6;
+                    font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                    color: var(--md-sys-color-on-surface, #e3e2e6);
                     display: flex;
                     flex-direction: column;
-                    gap: 24px;
+                    gap: var(--md-sys-spacing-6, 24px);
                 }
                 .section-header {
-                    font-size: 16px;
-                    font-weight: 600;
-                    margin-bottom: 12px;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
+                    font-size: var(--md-sys-typescale-title-medium-size, 16px);
+                    line-height: var(--md-sys-typescale-title-medium-line, 24px);
+                    font-weight: var(--md-sys-typescale-title-medium-weight, 600);
+                    margin-bottom: var(--md-sys-spacing-3, 12px);
+                    border-bottom: 1px solid var(--md-sys-color-outline-variant, #44474f);
                     padding-bottom: 6px;
-                    color: #60a5fa;
+                    color: var(--md-sys-color-primary, #82b1ff);
                 }
                 .author-row {
                     display: flex;
                     align-items: center;
-                    margin-bottom: 12px;
-                    font-size: 14px;
+                    margin-bottom: var(--md-sys-spacing-3, 12px);
+                    font-size: var(--md-sys-typescale-body-medium-size, 14px);
                 }
                 .author-name {
                     width: 120px;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    color: #d1d5db;
+                    color: var(--md-sys-color-on-surface, #e3e2e6);
                 }
                 .bar-container {
                     flex: 1;
                     height: 8px;
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 4px;
-                    margin: 0 16px;
+                    background: var(--md-sys-color-surface-container-high, #292b2f);
+                    border-radius: var(--md-sys-shape-corner-extra-small, 4px);
+                    margin: 0 var(--md-sys-spacing-4, 16px);
                     overflow: hidden;
                 }
                 .bar {
                     height: 100%;
-                    background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
-                    border-radius: 4px;
+                    background: var(--md-sys-color-primary, #82b1ff);
+                    border-radius: var(--md-sys-shape-corner-extra-small, 4px);
                 }
                 .author-count {
                     width: 80px;
                     text-align: right;
-                    color: #9ca3af;
+                    color: var(--md-sys-color-on-surface-variant, #c5c6d0);
                 }
                 .commit-item {
-                    background: rgba(255, 255, 255, 0.02);
-                    border: 1px solid rgba(255, 255, 255, 0.05);
-                    border-radius: 8px;
-                    padding: 12px;
-                    margin-bottom: 8px;
+                    background: var(--md-sys-color-surface-container, #1e2024);
+                    border: 1px solid var(--md-sys-color-outline-variant, #44474f);
+                    border-radius: var(--md-sys-shape-corner-small, 8px);
+                    padding: var(--md-sys-spacing-3, 12px);
+                    margin-bottom: var(--md-sys-spacing-2, 8px);
                 }
                 .commit-header {
                     display: flex;
                     justify-content: space-between;
-                    font-size: 12px;
-                    color: #9ca3af;
+                    font-size: var(--md-sys-typescale-label-small-size, 11px);
+                    line-height: var(--md-sys-typescale-label-small-line, 16px);
+                    color: var(--md-sys-color-on-surface-variant, #c5c6d0);
                     margin-bottom: 6px;
                 }
                 .commit-hash {
-                    font-family: 'JetBrains Mono', monospace;
-                    color: #60a5fa;
+                    font-family: var(--md-sys-typescale-font-mono, monospace);
+                    color: var(--md-sys-color-primary, #82b1ff);
                     font-weight: 500;
                 }
                 .commit-author {
                     font-weight: 500;
-                    color: #e5e7eb;
+                    color: var(--md-sys-color-on-surface, #e3e2e6);
                 }
                 .commit-msg {
-                    font-size: 14px;
-                    color: #d1d5db;
+                    font-size: var(--md-sys-typescale-body-medium-size, 14px);
+                    line-height: var(--md-sys-typescale-body-medium-line, 20px);
+                    color: var(--md-sys-color-on-surface-variant, #c5c6d0);
                 }
             </style>
             <div class="container">
                 <div>
                     <div class="section-header">Author Breakdown</div>
-                    ${authorRows || '<div style="color: #9ca3af; font-size: 14px;">No commit metrics available.</div>'}
+                    ${authorRows || '<div style="color: var(--md-sys-color-on-surface-variant, #c5c6d0); font-size: var(--md-sys-typescale-body-medium-size, 14px);">No commit metrics available.</div>'}
                 </div>
                 <div>
                     <div class="section-header">Recent Commit Activity</div>
                     <div class="commit-list">
-                        ${commitRows || '<div style="color: #9ca3af; font-size: 14px;">No commits found in history.</div>'}
+                        ${commitRows || '<div style="color: var(--md-sys-color-on-surface-variant, #c5c6d0); font-size: var(--md-sys-typescale-body-medium-size, 14px);">No commits found in history.</div>'}
                     </div>
                 </div>
             </div>

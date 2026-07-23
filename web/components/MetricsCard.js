@@ -8,34 +8,34 @@ class MetricsCard extends KrokisElement {
             this.shadowRoot.innerHTML = `
                 <style>
                     .card {
-                        background: rgba(255, 255, 255, 0.02);
-                        border: 1px solid rgba(255, 255, 255, 0.05);
-                        border-radius: 16px;
-                        padding: 24px;
+                        background: var(--md-sys-color-surface-container, #1e2024);
+                        border: 1px solid var(--md-sys-color-outline-variant, #44474f);
+                        border-radius: var(--md-sys-shape-corner-large, 16px);
+                        padding: var(--md-sys-spacing-6, 24px);
                         display: flex;
                         flex-direction: column;
-                        gap: 8px;
-                        box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.2);
-                        backdrop-filter: blur(10px);
-                        transition: transform 0.3s ease, border-color 0.3s ease;
-                        font-family: 'Open Sans', sans-serif;
+                        gap: var(--md-sys-spacing-2, 8px);
+                        box-shadow: var(--md-sys-elevation-1, 0 1px 2px 0 rgba(0, 0, 0, 0.3));
+                        transition: transform var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, ease),
+                            box-shadow var(--md-sys-motion-duration-short2, 200ms) var(--md-sys-motion-easing-standard, ease);
+                        font-family: var(--md-sys-typescale-font, system-ui, sans-serif);
                     }
                     .card:hover {
-                        transform: translateY(-4px);
-                        border-color: rgba(59, 130, 246, 0.3);
+                        transform: translateY(-2px);
+                        box-shadow: var(--md-sys-elevation-2, 0 1px 2px 0 rgba(0, 0, 0, 0.3));
                     }
                     .value {
-                        font-size: 32px;
+                        font-size: var(--md-sys-typescale-headline-small-size, 24px);
+                        line-height: var(--md-sys-typescale-headline-small-line, 32px);
                         font-weight: 700;
-                        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
+                        color: var(--md-sys-color-primary, #82b1ff);
                     }
                     .label {
-                        font-size: 13px;
-                        color: #9ca3af;
-                        font-weight: 500;
-                        letter-spacing: 0.2px;
+                        font-size: var(--md-sys-typescale-label-medium-size, 12px);
+                        line-height: var(--md-sys-typescale-label-medium-line, 16px);
+                        color: var(--md-sys-color-on-surface-variant, #c5c6d0);
+                        font-weight: var(--md-sys-typescale-label-medium-weight, 600);
+                        letter-spacing: var(--md-sys-typescale-label-medium-tracking, 0.5px);
                         text-transform: uppercase;
                     }
                 </style>
