@@ -42,7 +42,7 @@ function syncToggleUI() {
 const RAPI_DOC_ATTRIBUTES = {
     'spec-url': '/api/openapi',
     'theme': 'dark',
-    'regular-font': 'Roboto, sans-serif',
+    'regular-font': 'Inter, sans-serif',
     'mono-font': 'JetBrains Mono, monospace',
     'nav-item-spacing': 'relaxed',
     'layout': 'column',

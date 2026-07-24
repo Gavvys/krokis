@@ -3,7 +3,7 @@
    Source of truth for every style in the dashboard.
    Categories:
      1. Color (Material 3 dark on :root, light on :root[data-theme="light"])
-     2. Typography (Roboto family, M3 type scale)
+     2. Typography (Inter family, M3 type scale)
      3. Shape (M3 corner-radius scale)
      4. Elevation (M3 5-level box-shadow tokens)
      5. Motion (M3 standard easing + duration scale)
@@ -58,7 +58,7 @@
     --md-sys-color-inverse-primary: #005ac1;
 
     /* 2. Typography ------------------------------------------------------- */
-    --md-sys-typescale-font: 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --md-sys-typescale-font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --md-sys-typescale-font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
     /* display large/medium/small */

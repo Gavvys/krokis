@@ -1,13 +1,13 @@
 # Design System & UX Conventions
 
-Krokis visual dashboard adopts the Material 3 dark theme using design tokens defined in `web/tokens.css`. Roboto is the body and heading font; JetBrains Mono is reserved for code, commit hashes, and identifiers. Surfaces rely on solid M3 surface colors and elevation; the dashboard does not use glassmorphism, radial gradients, or `backdrop-filter` blur.
+Krokis visual dashboard adopts the Material 3 dark theme using design tokens defined in `web/tokens.css`. Inter is the body and heading font; JetBrains Mono is reserved for code, commit hashes, and identifiers. Surfaces rely on solid M3 surface colors and elevation; the dashboard does not use glassmorphism, radial gradients, or `backdrop-filter` blur.
 
 ## Token source
 
 `web/tokens.css` is the single source of truth. It defines seven categories:
 
 - **Color** (`--md-sys-color-*`): primary, on-primary, primary-container, on-primary-container; secondary, on-secondary, secondary-container, on-secondary-container; tertiary, on-tertiary, tertiary-container, on-tertiary-container; error, on-error, error-container, on-error-container; background, on-background; surface, on-surface; surface-variant, on-surface-variant; surface-container-lowest, surface-container-low, surface-container, surface-container-high, surface-container-highest; outline, outline-variant; scrim, shadow; inverse-surface, inverse-on-surface, inverse-primary.
-- **Typography** (`--md-sys-typescale-*`): font families (Roboto + JetBrains Mono), display/headline/title/body/label sizes for large/medium/small.
+- **Typography** (`--md-sys-typescale-*`): font families (Inter + JetBrains Mono), display/headline/title/body/label sizes for large/medium/small.
 - **Shape** (`--md-sys-shape-corner-*`): none, extra-small (4px), small (8px), medium (12px), large (16px), extra-large (28px), full (9999px).
 - **Elevation** (`--md-sys-elevation-1` through `-5`): M3 5-level box-shadow tokens.
 - **Motion** (`--md-sys-motion-easing-*`, `--md-sys-motion-duration-*`): standard/emphasized/decelerate/accelerate easing curves; short1/short2/short3/short4/medium1/medium2/long1/long2 durations.
@@ -37,7 +37,7 @@ Dark theme is the default; light theme values are listed alongside where they di
 
 ## Typography
 
-- **Body and headings**: `Roboto` from Google Fonts (weights 300, 400, 500, 700).
+- **Body and headings**: `Inter` from Google Fonts (weights 300, 400, 500, 700).
 - **Code and identifiers**: `JetBrains Mono` from Google Fonts (weights 400, 500).
 - **Type scale**: M3 `body-medium` (14px / 20px) for default body, `title-medium` (16px / 24px / 600) for card headings, `title-large` (22px / 28px / 500) for the sidebar logo, `label-small` (11px / 16px / 600 / 0.5px tracking) for nav section headers.
 
