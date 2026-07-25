@@ -39,11 +39,57 @@ body {
 
 /* 2. Sidebar */
 .sidebar {
-    width: 280px;
+    position: relative;
+    width: var(--krokis-sidebar-width, 280px);
+    min-width: 200px;
+    max-width: 560px;
+    flex: 0 0 var(--krokis-sidebar-width, 280px);
     background-color: var(--md-sys-color-surface-container-low);
     border-right: 1px solid var(--md-sys-color-outline-variant);
     display: flex;
     flex-direction: column;
+}
+
+.sidebar-resizer {
+    position: absolute;
+    top: 0;
+    right: -3px;
+    width: 6px;
+    height: 100%;
+    cursor: col-resize;
+    z-index: 20;
+    touch-action: none;
+    background: transparent;
+}
+
+.sidebar-resizer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 2px;
+    width: 2px;
+    background: transparent;
+    transition: background-color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard);
+}
+
+.sidebar-resizer:hover::after,
+.sidebar-resizer:focus-visible::after,
+body.is-resizing-sidebar .sidebar-resizer::after {
+    background: var(--md-sys-color-primary);
+}
+
+.sidebar-resizer:focus-visible {
+    outline: none;
+}
+
+body.is-resizing-sidebar {
+    cursor: col-resize;
+    user-select: none;
+}
+
+body.is-resizing-sidebar .main-content {
+    pointer-events: none;
 }
 
 .sidebar-header {
@@ -53,6 +99,13 @@ body {
     align-items: center;
     justify-content: space-between;
     gap: var(--md-sys-spacing-3);
+}
+
+.sidebar-project-selector {
+    width: 100%;
+    margin-bottom: var(--md-sys-spacing-3);
+    position: relative;
+    z-index: 30;
 }
 
 .logo {
@@ -114,7 +167,7 @@ body {
     font-size: var(--md-sys-typescale-label-large-size);
     line-height: var(--md-sys-typescale-label-large-line);
     font-weight: var(--md-sys-typescale-label-large-weight);
-    border-radius: var(--md-sys-shape-corner-full);
+    border-radius: var(--md-sys-shape-corner-small);
     transition: color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard),
         background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
     border: 1px solid transparent;
@@ -163,26 +216,10 @@ body {
 .wiki-nav-link {
     display: flex;
     flex-direction: column;
-    gap: 2px;
 }
 
 .wiki-nav-title {
     font-weight: 500;
-}
-
-.wiki-nav-source {
-    color: var(--md-sys-color-on-surface-variant);
-    font-family: var(--md-sys-typescale-font-mono);
-    font-size: var(--md-sys-typescale-body-small-size);
-    line-height: var(--md-sys-typescale-body-small-line);
-    opacity: 0.7;
-    overflow-wrap: anywhere;
-}
-
-.wiki-nav-link:hover .wiki-nav-source,
-.wiki-nav-link.active .wiki-nav-source {
-    color: inherit;
-    opacity: 0.7;
 }
 
 /* 3. Sidebar Icon Button */
@@ -190,10 +227,10 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     padding: 0;
-    border-radius: var(--md-sys-shape-corner-full);
+    border-radius: var(--md-sys-shape-corner-small);
     color: var(--md-sys-color-on-surface-variant);
     background: transparent;
     border: 0;
@@ -254,6 +291,21 @@ body {
     animation: icon-btn-spin 0.9s linear infinite;
 }
 
+/* Theme toggle: one icon reflecting the active theme */
+#theme-toggle .theme-icon-sun,
+#theme-toggle .theme-icon-moon {
+    display: none;
+}
+
+:root:not([data-theme="light"]) #theme-toggle .theme-icon-moon,
+:root[data-theme="dark"] #theme-toggle .theme-icon-moon {
+    display: block;
+}
+
+:root[data-theme="light"] #theme-toggle .theme-icon-sun {
+    display: block;
+}
+
 @keyframes icon-btn-spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -280,12 +332,13 @@ body {
     align-items: center;
     justify-content: center;
     padding: var(--md-sys-spacing-2) var(--md-sys-spacing-5);
-    border-radius: var(--md-sys-shape-corner-full);
+    border-radius: var(--md-sys-shape-corner-small);
     font-family: var(--md-sys-typescale-font);
     font-size: var(--md-sys-typescale-label-large-size);
     line-height: var(--md-sys-typescale-label-large-line);
     font-weight: var(--md-sys-typescale-label-large-weight);
     letter-spacing: var(--md-sys-typescale-label-large-tracking);
+    text-transform: uppercase;
     cursor: pointer;
     transition: background-color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard),
         color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard),
@@ -294,8 +347,13 @@ body {
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    background: transparent;
-    color: var(--md-sys-color-primary);
+    background: var(--md-sys-color-primary-container);
+    color: var(--md-sys-color-on-primary-container);
+    box-shadow: var(--md-sys-elevation-1);
+}
+
+.btn:hover {
+    box-shadow: var(--md-sys-elevation-2);
 }
 
 .btn::before {
@@ -344,6 +402,16 @@ body {
     color: var(--md-sys-color-on-surface);
 }
 
+.mdx-component-error {
+    color: var(--md-sys-color-error);
+    border: 1px solid var(--md-sys-color-error);
+    border-left-width: 4px;
+    padding: var(--md-sys-spacing-3);
+    margin: var(--md-sys-spacing-4) 0;
+    font-family: var(--md-sys-typescale-font-mono);
+    font-size: var(--md-sys-typescale-body-small-size);
+}
+
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
     margin-top: var(--md-sys-spacing-6);
     margin-bottom: var(--md-sys-spacing-4);
@@ -366,6 +434,26 @@ body {
 .markdown-body h3 {
     font-size: var(--md-sys-typescale-title-medium-size);
     line-height: var(--md-sys-typescale-title-medium-line);
+}
+
+.markdown-body a {
+    color: var(--md-sys-color-primary);
+    font-weight: 400;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: var(--md-sys-color-outline);
+    text-underline-offset: 3px;
+    opacity: 0.9;
+    transition: color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard),
+                opacity var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard),
+                text-decoration-color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard);
+}
+
+.markdown-body a:hover {
+    color: var(--md-sys-color-primary);
+    opacity: 1;
+    text-decoration-color: var(--md-sys-color-primary);
+    text-decoration-style: solid;
 }
 
 .markdown-body p {
@@ -402,34 +490,43 @@ body {
     font-size: 13px;
 }
 
+/* MUI v5 Basic Table — Paper shell, horizontal dividers only, no zebra striping */
 .markdown-body table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: var(--md-sys-spacing-4);
     background: var(--md-sys-color-surface-container);
-    border: 1px solid var(--md-sys-color-outline-variant);
+    border: 1px solid var(--md-sys-color-outline);
     border-radius: var(--md-sys-shape-corner-small);
+    box-shadow: var(--md-sys-elevation-1);
     overflow: hidden;
     font-size: var(--md-sys-typescale-body-medium-size);
+    line-height: var(--md-sys-typescale-body-medium-line);
     color: var(--md-sys-color-on-surface);
 }
 
 .markdown-body th,
 .markdown-body td {
-    padding: var(--md-sys-spacing-2) var(--md-sys-spacing-4);
+    padding: var(--md-sys-spacing-4);
     text-align: left;
-    border: 1px solid var(--md-sys-color-outline-variant);
-    color: var(--md-sys-color-on-surface-variant);
+    vertical-align: middle;
+    border: 0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    color: var(--md-sys-color-on-surface);
+    font-weight: 400;
 }
 
 .markdown-body th {
-    background: var(--md-sys-color-surface-container-high);
+    background: transparent;
     color: var(--md-sys-color-on-surface);
-    font-weight: 600;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: normal;
 }
 
-.markdown-body tr:nth-child(even) td {
-    background: var(--md-sys-color-surface-container-low);
+.markdown-body tbody tr:last-child th,
+.markdown-body tbody tr:last-child td {
+    border-bottom: 0;
 }
 
 .markdown-body blockquote,
@@ -462,7 +559,7 @@ body {
 .section-card {
     background: var(--md-sys-color-surface-container);
     border: 1px solid var(--md-sys-color-outline-variant);
-    border-radius: var(--md-sys-shape-corner-large);
+    border-radius: var(--md-sys-shape-corner-small);
     padding: var(--md-sys-spacing-6);
     box-shadow: var(--md-sys-elevation-1);
     transition: box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
@@ -681,35 +778,56 @@ body {
     border-collapse: collapse;
     font-family: var(--md-sys-typescale-font);
     font-size: var(--md-sys-typescale-body-medium-size);
+    line-height: var(--md-sys-typescale-body-medium-line);
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-small);
+    box-shadow: var(--md-sys-elevation-1);
+    overflow: hidden;
 }
 
 .change-detail-table th,
 .change-detail-table td {
+    border: 0;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
-    padding: var(--md-sys-spacing-2) var(--md-sys-spacing-3);
+    padding: var(--md-sys-spacing-4);
     text-align: left;
+    vertical-align: middle;
 }
 
 .change-detail-table th {
-    color: var(--md-sys-color-on-surface-variant);
-    font-weight: 600;
+    color: var(--md-sys-color-on-surface);
+    font-weight: 500;
     width: 200px;
-    text-transform: uppercase;
-    font-size: var(--md-sys-typescale-label-small-size);
-    line-height: var(--md-sys-typescale-label-small-line);
-    letter-spacing: 0.04em;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: var(--md-sys-typescale-body-medium-size);
+    line-height: var(--md-sys-typescale-body-medium-line);
 }
 
 .change-detail-table td {
     color: var(--md-sys-color-on-surface);
+    font-weight: 400;
     font-family: var(--md-sys-typescale-font-mono);
+}
+
+.change-detail-table tr:last-child th,
+.change-detail-table tr:last-child td {
+    border-bottom: 0;
 }
 
 .change-link {
     color: var(--md-sys-color-on-surface);
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: var(--md-sys-color-outline);
+    text-underline-offset: 3px;
+    font-weight: 600;
+    transition: color var(--md-sys-motion-duration-short1) var(--md-sys-motion-easing-standard);
 }
 
 .change-link:hover {
     color: var(--md-sys-color-primary);
+    text-decoration-style: solid;
+    text-decoration-color: var(--md-sys-color-primary);
 }

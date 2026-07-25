@@ -1,62 +1,87 @@
 # Architecture Overview
 
-Krokis runs as a standalone Go binary compiled from `main.go`. It has zero external execution requirements.
+Krokis runs as a native desktop application built with Tauri v2 and Rust, housing a zero-framework Material 3 Web Component frontend SPA.
 
 ## Component Layout
 
 ```
 /Users/ksumallo/dev/projects/Krokis/
-├── main.go                     # Binary entrypoint
-├── go.mod                      # Module metadata
-├── internal/
-│   ├── cmd/                    # Cobra CLI command subcommands (init, doctor, serve, insights, wiki, validate)
-│   ├── config/                 # config.toml loading, saving, and validation rules
-│   ├── metrics/                # Git log parsing, LOC line counting, test/lint parsing
-│   ├── wiki/                   # SNAKE_CASE naming audits and wiki listing logic
-│   └── web/                    # Embedded web server API router
-└── web/                        # Web dashboard client frontend (embedded in Go binary via go:embed)
+├── src-tauri/                 # Tauri v2 Rust Backend Crate
+│   ├── Cargo.toml             # Rust package configuration
+│   ├── tauri.conf.json        # Tauri v2 app and window configuration
+│   ├── capabilities/         # Security permissions (dialog, store)
+│   └── src/
+│       ├── main.rs            # Desktop application entrypoint
+│       ├── lib.rs             # Tauri IPC command definitions
+│       ├── projects.rs        # Project Hub active path & store management
+│       ├── wiki.rs            # SNAKE_CASE wiki document reader & writer
+│       ├── roadmap.rs         # ROADMAP.md → view-only Kanban columns/cards
+│       └── metrics/           # Rust telemetry engine
+│           ├── mod.rs         # Telemetry gatherer orchestrator
+│           ├── git.rs         # Git log parsing & commit cadence
+│           ├── codebase.rs    # Line counting (LOC) & file breakdowns
+│           ├── change_flow.rs # OpenSpec change scanning & cycle time
+│           └── coverage.rs    # Spec-to-code requirement identifier scanning
+├── web/                       # Web Dashboard Frontend SPA
+│   ├── index.html             # Main desktop webview HTML shell
+│   ├── app.js                 # Tauri IPC dispatcher & client router
+│   ├── vendor/                # Offline minified JS/CSS dependencies
+│   └── components/            # Material 3 Web Components (ProjectSelector, etc.)
+└── openspec/                  # OpenSpec workflow specifications
 ```
 
 ## System Data Flow
 
-1.  **Telemetry Generation (`krokis insights`)**:
-    *   Reads `config.toml` to locate QA report outputs.
-    *   Runs shell Git commands (`git log`) to parse commit cadence.
-    *   Walks the workspace directory, counting lines of code by extension.
-    *   Parses JUnit XML and lint JSON data.
-	*   Reads local OpenSpec change directories to report active WIP, change age, completed cycle time, monthly throughput, and planning health.
-    *   Writes report data to `.krokis/insights/health.json` and `.krokis/insights/INDEX.mdx`.
-2.  **Dashboard Serving (`krokis serve`)**:
-    *   Spins up an HTTP server.
-    *   Serves embedded client assets (`web/`).
-    *   Exposes endpoints `/api/insights`, `/api/wiki`, and `/api/openapi`. Change-flow data is included in the existing insights response.
-    *   Routes all unmapped routes to `index.html` (Single-Page Application client routing).
-3.  **Client Compilation**:
-    *   `app.js` runs a client-side routing check based on URL hash.
-    *   Downloads raw MDX documents from the backend and translates JSX tags (`<MetricsCard />`, `<InfoBox>`) to custom HTML Web Components.
-    *   Uses CDNs to load `marked.js` and `prism.js` for lightweight browser markdown compilation.
-    *   Loads `RapiDoc` dynamically to render OpenAPI specifications served at `/api/openapi`.
-	*   Renders `#/changes` from local change-flow telemetry under the top-level `Changes` sidebar section. Planning health shows artifact and task evidence; it does not claim OpenSpec validation passed. The table on `#/changes` lists active changes only.
-	*   Renders `#/changes/archived` for completed OpenSpec changes with completion date, cycle time, and planning health. The `Archived` sidebar link is hidden when the workspace has no completed changes.
-	*   Renders `#/changes/<change>` with a per-change detail view that includes a list/graph toggle. The graph view is a hand-written inline SVG Web Component (`web/components/ChangeFlowGraph.js`) that maps proposal → design → spec deltas → tasks and re-renders on `themechange`. The toggle preference is stored under `krokis.changeViewMode` in `localStorage`. The deprecated routes `#/insights/flow` and `#/insights/flow/<change>` redirect to their new equivalents.
-	*   Client-side routing is table-driven: a `routes[]` array in `web/app.js` lists every route with a `match`, `title`, and `render` function, and a single dispatcher in `handleRoute` resolves the active route. Every dashboard Web Component extends `KrokisElement` (`web/components/_base.js`), which owns shadow DOM setup, the `data` and `mode` setters, the `themechange` listener, and the shared `escape` helper. The `mountPage` facade in `web/app.js` writes a `section-card` shell and mounts a custom element, replacing the previous per-page duplication.
-	*   The HTTP server uses a `withConfig` middleware in `internal/web/server.go` that loads the `config.Config` once per request and passes it to the inner handler, removing the load-or-respond-with-500 boilerplate from every API handler. The CLI uses a `loadConfigOrDie()` helper in `internal/cmd/helpers.go` for most commands; `doctor` loads config gracefully with `config.Load()` to handle missing-config paths, and `init` creates a fresh `config.Default()` for first-time scaffolding. The `init` command uses a `scaffoldFile(path, content, label)` helper for the stat-write-print dance, and `doctor` runs a `[]check` table that the runner iterates over.
-	*   The `krokis init` command is idempotent. It fills missing scaffolding without overwriting existing files, prints `↻ Skipped` for files it leaves alone, and `--verbose` adds directory-level output. After scaffolding, init auto-invokes `krokis doctor` and streams its output. The doctor command stays available standalone. Use `--skip-doctor` to suppress the auto-invocation. The init logic lives in `runInit(verbose, skipDoctor bool) int` and the doctor logic in `runDoctorChecks() int`, so both `cobra.Command.Run` and any future callers can reuse the same code path.
-	*   The `/api/insights` payload also includes a `coverage` section produced by `internal/metrics/coverage.go`. The gatherer walks `openspec/specs/**/spec.md`, extracts named identifiers (custom-element tags, route hashes, backticked symbols, quoted strings) per requirement, and scans the workspace tree for matches. Each requirement is classified `covered`, `partial`, or `uncovered`. The dashboard surfaces this at `#/insights/coverage` via the `CoverageReport` Web Component.
-	*   The Krokis skill ships a shared `references/plan-discipline.md` that captures the editorial rules every Krokis plan and OpenSpec change artifact follows (gate thoughtfully, research before drafting, decide hard-to-reverse bets first, keep the plan self-contained, plan-read-only until approved, single bottom Open Questions block, clarifying-vs-assume). The OpenSpec skills under `.agents/skills/openspec-*/` reference the discipline document at the top of their `SKILL.md` so the discipline is a single source of truth across the skill set. The Krokis `SKILL.md` opens with a "Read order" block that names the workflow files and references in the order an agent should read them.
+1.  **Desktop Initialization**:
+    *   Tauri launches native application window (`src-tauri/src/main.rs`).
+    *   `projects::get_project_state` loads active project path and recent projects from persistent store (`tauri-plugin-store`).
+    *   Webview loads `web/index.html` and executes `web/app.js`.
+
+2.  **Telemetry & Wiki IPC Commands**:
+    *   `invoke('get_insights')`: Triggers Rust metrics gatherer against the active workspace root.
+        *   `git.rs`: Runs `git log` commands to parse commit history, recent commits, and author stats.
+        *   `codebase.rs`: Walks workspace directory counting lines of code by extension.
+        *   `change_flow.rs`: Scans `openspec/changes/` (active & archived) for proposal progress, tasks checkboxes, and cycle times.
+        *   `coverage.rs`: Scans `openspec/specs/` for requirement identifiers and performs substring searches across workspace source files.
+    *   `invoke('list_wiki_files')`: Scans `.krokis/wiki/*.mdx` and root canonical files (`PRODUCT.md`, `ARCHITECTURE.md`, `DESIGN.md`, `ROADMAP.md`, `PROJECT_MEMORY.md`).
+    *   `invoke('get_wiki_content')`: Reads raw markdown content from disk.
+    *   `invoke('get_roadmap')`: Parses workspace-root `ROADMAP.md` into Now/Queued/Exploring/Parked/Shipped columns for the view-only Kanban board (`#/roadmap`). Does not write the file.
+    *   `invoke('create_wiki_page')`: Creates new SNAKE_CASE `.mdx` wiki pages.
+
+3.  **Project Hub IPC**:
+    *   `<project-selector>` Web Component renders active project name and recent project dropdown in sidebar.
+    *   `invoke('select_project_folder')`: Opens native OS directory picker (`tauri-plugin-dialog`).
+    *   Switching workspace path updates active project state in Rust and emits a `projectchange` DOM event to reload telemetry and wiki links instantly.
+
+4.  **Client Compilation & Offline Posture**:
+    *   `web/vendor/` bundles minified offline copies of `marked.min.js`, `prism.min.js`, and `rapidoc-min.js`, operating with zero external network calls.
+    *   `web/mdx/registry.js` defines the MDX-only allowlist, props, child support, and data source for embeddable components.
+    *   `web/app.js` translates registered JSX-like tags (`<MetricsCard />`, `<InfoBox>`) to custom Web Components extending `KrokisElement`, then hydrates data-backed elements.
+
+## Design Decisions
+
+### ADR 004: View-only Roadmap Kanban
+
+- **Status**: Approved
+- **Context**: Commitment horizons in `ROADMAP.md` are hard to scan as wiki prose; users want a Kanban-shaped overview without a second project-management store.
+- **Decision**: Parse `ROADMAP.md` into a read-only board at `#/roadmap`. Agents reorganize Markdown; the UI never writes the file.
+- **Consequences**: One source of truth, cheap projection, no drag-and-write complexity.
+
+### ADR 003: Pure Tauri-Rust Native Desktop Architecture
+
+- **Status**: Approved
+- **Context**: Users want a native desktop application with a multi-project selector hub (similar to Cursor's Agents Window), eliminating local web servers and background daemons.
+- **Decision**: Re-architect Krokis as a Tauri v2 Rust desktop application. Replace Go CLI/HTTP server runtime with native Rust IPC commands (`invoke()`).
+- **Consequences**: Zero local web server management, native OS folder picker dialogs, persistent multi-project workspace memory, and true 100% offline desktop posture.
 
 ### ADR 002: Change-flow artifact map in insights payload
 
 - **Status**: Approved
-- **Context**: The change-flow graph component needs to know which planning artifacts each change contains without a second HTTP round-trip.
-- **Decision**: Extend `ChangeFlowMetrics` with `ArtifactMap map[string][]string`, populated by `internal/metrics/change_flow.go` while it already walks the change directory. The map is additive: existing consumers that ignore unknown keys stay compatible.
-- **Consequences**: One new payload field, no new endpoints, no breaking changes. The component reads `flow.artifact_map[change.name]` and merges it with the per-change `planning_health` record.
-
-## Design Decisions
+- **Context**: The change-flow graph component needs to know which planning artifacts each change contains without extra IPC round-trips.
+- **Decision**: Include `artifact_map: HashMap<String, Vec<String>>` in `ChangeFlowMetrics`.
 
 ### ADR 001: Standardized Specs
 
 - **Status**: Approved
 - **Context**: Code quality and agent alignment.
 - **Decision**: Use OpenSpec for all feature implementations.
-- **Consequences**: Structured specification folders and deterministic agent instructions.

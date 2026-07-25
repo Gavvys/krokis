@@ -1,16 +1,16 @@
 # agent-skills Specification
 
 ## Purpose
-TBD - created by archiving change initialize-krokis-cli. Update Purpose after archive.
+Defines the consolidated Krokis Agent Skill layout under `.agents/skills/krokis/`.
+
 ## Requirements
 ### Requirement: Agent Skills scaffolding
-The Krokis CLI MUST populate the workspace's active agent skills directory (preferring `.agents/skills/` and falling back to `.agent/skills/`) with a single Krokis skill directory and the documented file layout, instead of the legacy per-workflow skills.
+Workspace initialization MUST populate the workspace's active agent skills directory (preferring `.agents/skills/` and falling back to `.agent/skills/`) with a single Krokis skill directory and the documented file layout, instead of the legacy per-workflow skills.
 
-#### Scenario: Running init scaffolding
-- **WHEN** user executes `krokis init` in a fresh workspace
-- **THEN** system populates `.agents/skills/krokis/` with a `SKILL.md`, a `workflows/` directory containing `insights.md`, `wiki.md`, and `roadmap.md`, a `references/` directory containing `commands.md` and `plan-discipline.md`, and an empty `scripts/` directory
+#### Scenario: Initializing skills scaffolding
+- **WHEN** user initializes Krokis in a fresh workspace
+- **THEN** system populates `.agents/skills/krokis/` with a `SKILL.md`, a `workflows/` directory containing `insights.md`, `wiki.md`, and `roadmap.md`, a `references/` directory containing `commands.md` and `plan-discipline.md`, and a `scripts/` directory
 
-#### Scenario: Re-running init is idempotent
-- **WHEN** user executes `krokis init` in a workspace that already has `.agents/skills/krokis/`
-- **THEN** the existing files are left untouched and the command reports them as skipped
-
+#### Scenario: Re-initializing is idempotent
+- **WHEN** user re-initializes Krokis in a workspace that already has `.agents/skills/krokis/`
+- **THEN** the existing files are left untouched

@@ -84,9 +84,10 @@ class CoverageReport extends KrokisElement {
             .cov-covered { background: var(--md-sys-color-secondary-container, #324a82); color: var(--md-sys-color-on-secondary-container, #dce2ff); }
             .cov-partial { background: var(--md-sys-color-tertiary-container, #4837ac); color: var(--md-sys-color-on-tertiary-container, #e6deff); }
             .cov-uncovered { background: var(--md-sys-color-error-container, #93000a); color: var(--md-sys-color-on-error-container, #ffdad6); }
-            .cov-table { width: 100%; border-collapse: collapse; font-size: var(--md-sys-typescale-body-medium-size, 14px); }
-            .cov-table th, .cov-table td { border-bottom: 1px solid var(--md-sys-color-outline-variant, #44474f); padding: var(--md-sys-spacing-2, 10px) var(--md-sys-spacing-2, 8px); text-align: left; vertical-align: top; }
-            .cov-table th { color: var(--md-sys-color-on-surface-variant, #c5c6d0); font-size: var(--md-sys-typescale-label-small-size, 11px); line-height: var(--md-sys-typescale-label-small-line, 16px); text-transform: uppercase; font-weight: var(--md-sys-typescale-label-small-weight, 600); letter-spacing: 0.5px; }
+            .cov-table { width: 100%; border-collapse: collapse; font-size: var(--md-sys-typescale-body-medium-size, 14px); line-height: var(--md-sys-typescale-body-medium-line, 20px); background: var(--md-sys-color-surface-container, #232323); border: 1px solid var(--md-sys-color-outline, rgba(255,255,255,0.23)); border-radius: var(--md-sys-shape-corner-small, 4px); box-shadow: var(--md-sys-elevation-1); overflow: hidden; }
+            .cov-table th, .cov-table td { border: 0; border-bottom: 1px solid var(--md-sys-color-outline-variant, rgba(255,255,255,0.12)); padding: var(--md-sys-spacing-4, 16px); text-align: left; vertical-align: middle; color: var(--md-sys-color-on-surface, #e3e2e6); font-weight: 400; }
+            .cov-table th { font-weight: 500; text-transform: none; letter-spacing: normal; font-size: var(--md-sys-typescale-body-medium-size, 14px); line-height: var(--md-sys-typescale-body-medium-line, 20px); }
+            .cov-table tbody tr:last-child td { border-bottom: 0; }
             .cov-row small { color: var(--md-sys-color-on-surface-variant, #c5c6d0); margin-top: 2px; display: block; font-size: var(--md-sys-typescale-label-small-size, 11px); }
             .cov-toggle { background: transparent; color: var(--md-sys-color-on-surface-variant, #c5c6d0); border: 0; cursor: pointer; font-size: 14px; padding: 0; transition: color var(--md-sys-motion-duration-short1, 150ms) var(--md-sys-motion-easing-standard, ease); }
             .cov-toggle:hover { color: var(--md-sys-color-primary, #82b1ff); }

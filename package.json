@@ -1,0 +1,11 @@
+{
+  "name": "krokis",
+  "private": true,
+  "scripts": {
+    "dev": "vite web --host 127.0.0.1 --port 1420 --strictPort",
+    "build": "vite build web"
+  },
+  "devDependencies": {
+    "vite": "^8.1.5"
+  }
+}

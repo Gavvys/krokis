@@ -1,19 +1,19 @@
 # config-schema Specification
 
 ## Purpose
-TBD - created by archiving change krokis-config-schema. Update Purpose after archive.
+Defines validation of `.krokis/config.toml` structure and configured paths for the active workspace.
+
 ## Requirements
 ### Requirement: Validate config values
-The Krokis CLI MUST validate that properties in `config.toml` match valid types and structures.
+The Krokis desktop application MUST validate that properties in `config.toml` match valid types and structures when loading workspace configuration.
 
-#### Scenario: Running krokis validate on a bad config
-- **WHEN** user executes `krokis validate` with a configuration containing an invalid port (e.g. `port = -1`)
-- **THEN** system prints validation error details and exits with 1
+#### Scenario: Loading a bad config
+- **WHEN** the active workspace config contains an invalid value (for example a negative or non-numeric setting where a positive integer is required)
+- **THEN** system reports validation error details and does not treat the config as valid
 
 ### Requirement: Validate directory existence
-The Krokis CLI SHALL check if configured wiki and insights directories exist when running `krokis validate`.
+The Krokis desktop application SHALL check if configured wiki and insights directories exist when validating workspace configuration.
 
 #### Scenario: Validating missing folders
-- **WHEN** user executes `krokis validate` when configured directories do not exist on disk
-- **THEN** system prints warnings about missing folders, but exits with 0 if configuration types are correct
-
+- **WHEN** validation runs and configured directories do not exist on disk
+- **THEN** system reports warnings about missing folders, but treats type-valid configuration as structurally acceptable

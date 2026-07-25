@@ -25,16 +25,12 @@ function setTheme(theme) {
 function syncToggleUI() {
     const btn = document.getElementById('theme-toggle');
     if (!btn) return;
-    const sun = btn.querySelector('.theme-icon-sun');
-    const moon = btn.querySelector('.theme-icon-moon');
     const theme = getTheme();
     if (theme === 'light') {
-        sun.hidden = true;
-        moon.hidden = false;
+        btn.title = 'Light theme';
         btn.setAttribute('aria-label', 'Switch to dark theme');
     } else {
-        sun.hidden = false;
-        moon.hidden = true;
+        btn.title = 'Dark theme';
         btn.setAttribute('aria-label', 'Switch to light theme');
     }
 }
@@ -42,7 +38,7 @@ function syncToggleUI() {
 const RAPI_DOC_ATTRIBUTES = {
     'spec-url': '/api/openapi',
     'theme': 'dark',
-    'regular-font': 'Inter, sans-serif',
+    'regular-font': "'PT Sans', sans-serif",
     'mono-font': 'JetBrains Mono, monospace',
     'nav-item-spacing': 'relaxed',
     'layout': 'column',
@@ -95,12 +91,290 @@ function applyRapiDocAttributes(theme) {
     }
 }
 
+function logToBackend(level, context, message) {
+    const lvl = String(level).toLowerCase();
+    if (lvl === 'error') {
+        console.error(`[ERROR] [${context}]`, message);
+    } else if (lvl === 'warn' || lvl === 'warning') {
+        console.warn(`[WARN] [${context}]`, message);
+    } else if (lvl === 'verbose') {
+        console.debug(`[VERBOSE] [${context}]`, message);
+    } else {
+        console.log(`[INFO] [${context}]`, message);
+    }
+
+    if (window.__TAURI__ && window.__TAURI__.core) {
+        window.__TAURI__.core.invoke('log_message', {
+            level: lvl,
+            context: String(context),
+            message: String(message)
+        }).catch(() => {});
+    }
+}
+
+function logErrorToFile(context, message) {
+    logToBackend('error', context, message);
+}
+
+// Global non-blocking uncaught error handlers
+window.addEventListener('error', (event) => {
+    const msg = event.error ? (event.error.stack || event.error.message) : event.message;
+    logErrorToFile('window.onerror', msg);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    const msg = event.reason ? (event.reason.stack || event.reason.message || String(event.reason)) : 'Unhandled Promise Rejection';
+    logErrorToFile('unhandledrejection', msg);
+});
+
+function notifyToast(options) {
+    if (options && options.type === 'error') {
+        logErrorToFile('UI.ToastError', options.message);
+    }
+    const toast = document.getElementById('toast-notification');
+    if (toast && typeof toast.show === 'function') {
+        toast.show(options);
+    }
+}
+window.notifyToast = notifyToast;
+
+async function syncProjectSelector() {
+    const selector = document.getElementById('project-selector');
+    if (!selector) return;
+    try {
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            const state = await window.__TAURI__.core.invoke('get_recent_projects');
+            selector.data = state;
+        } else {
+            selector.data = {
+                active_project: 'Select Project',
+                recent_projects: [],
+            };
+        }
+    } catch (e) {
+        logErrorToFile('syncProjectSelector', e.message || String(e));
+        console.error('Failed to sync project selector:', e);
+        selector.data = {
+            active_project: 'Select Project',
+            recent_projects: [],
+        };
+    }
+}
+
+const SIDEBAR_MIN_WIDTH = 200;
+const SIDEBAR_MAX_WIDTH = 560;
+const SIDEBAR_DEFAULT_WIDTH = 280;
+
+function clampSidebarWidth(width) {
+    const maxByViewport = Math.max(SIDEBAR_MIN_WIDTH, Math.floor(window.innerWidth * 0.5));
+    const maxWidth = Math.min(SIDEBAR_MAX_WIDTH, maxByViewport);
+    return Math.min(maxWidth, Math.max(SIDEBAR_MIN_WIDTH, Math.round(width)));
+}
+
+function applySidebarWidth(width) {
+    const next = clampSidebarWidth(width);
+    document.documentElement.style.setProperty('--krokis-sidebar-width', `${next}px`);
+    return next;
+}
+
+function initSidebarResize() {
+    const sidebar = document.querySelector('.sidebar');
+    const resizer = document.getElementById('sidebar-resizer');
+    if (!sidebar || !resizer) return;
+
+    let storedWidth = SIDEBAR_DEFAULT_WIDTH;
+    try {
+        const raw = parseInt(localStorage.getItem('krokis.sidebarWidth'), 10);
+        if (Number.isFinite(raw)) storedWidth = raw;
+    } catch (e) {
+        // localStorage unavailable.
+    }
+    applySidebarWidth(storedWidth);
+
+    let dragStartX = 0;
+    let dragStartWidth = 0;
+    let dragging = false;
+
+    const onPointerMove = (event) => {
+        if (!dragging) return;
+        const delta = event.clientX - dragStartX;
+        applySidebarWidth(dragStartWidth + delta);
+    };
+
+    const stopDragging = (event) => {
+        if (!dragging) return;
+        dragging = false;
+        document.body.classList.remove('is-resizing-sidebar');
+        if (event && resizer.hasPointerCapture?.(event.pointerId)) {
+            resizer.releasePointerCapture(event.pointerId);
+        }
+        const width = clampSidebarWidth(sidebar.getBoundingClientRect().width);
+        applySidebarWidth(width);
+        try {
+            localStorage.setItem('krokis.sidebarWidth', String(width));
+        } catch (e) {
+            // localStorage unavailable.
+        }
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', stopDragging);
+        window.removeEventListener('pointercancel', stopDragging);
+    };
+
+    resizer.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+        dragging = true;
+        dragStartX = event.clientX;
+        dragStartWidth = sidebar.getBoundingClientRect().width;
+        document.body.classList.add('is-resizing-sidebar');
+        resizer.setPointerCapture?.(event.pointerId);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', stopDragging);
+        window.addEventListener('pointercancel', stopDragging);
+    });
+
+    resizer.addEventListener('keydown', (event) => {
+        const step = event.shiftKey ? 32 : 16;
+        let next = sidebar.getBoundingClientRect().width;
+        if (event.key === 'ArrowLeft') {
+            next -= step;
+        } else if (event.key === 'ArrowRight') {
+            next += step;
+        } else if (event.key === 'Home') {
+            next = SIDEBAR_MIN_WIDTH;
+        } else if (event.key === 'End') {
+            next = SIDEBAR_MAX_WIDTH;
+        } else {
+            return;
+        }
+        event.preventDefault();
+        const width = applySidebarWidth(next);
+        try {
+            localStorage.setItem('krokis.sidebarWidth', String(width));
+        } catch (e) {
+            // localStorage unavailable.
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        applySidebarWidth(sidebar.getBoundingClientRect().width);
+    });
+}
+
+async function syncDiagnosticsSection() {
+    const section = document.getElementById('diagnostics-section');
+    if (!section) return;
+    try {
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            const hasDoctor = await window.__TAURI__.core.invoke('has_doctor_report');
+            section.hidden = !hasDoctor;
+        } else {
+            section.hidden = true;
+        }
+    } catch (e) {
+        section.hidden = true;
+    }
+}
+
+async function executeDoctor() {
+    notifyToast({ message: 'Running Doctor checks...', type: 'info', duration: 3000 });
+    try {
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            await window.__TAURI__.core.invoke('run_doctor');
+            await syncDiagnosticsSection();
+            notifyToast({ message: 'Doctor report saved to .krokis/DOCTOR.md', type: 'success', duration: 4000 });
+            window.location.hash = '#/wiki/DOCTOR';
+        }
+    } catch (e) {
+        logErrorToFile('executeDoctor', e.message || String(e));
+        notifyToast({ message: `Doctor failed: ${e.message || e}`, type: 'error', duration: 6000 });
+    }
+}
+
+function checkWorkspaceShape() {
+    const selector = document.getElementById('project-selector');
+    const data = selector?.data || {};
+    const active = data.active_project || '';
+    if (!active || active === 'Select Project') return;
+
+    const projectName = active.split('/').pop() || active.split('\\').pop() || active;
+    const registry = Array.isArray(data.registry) ? data.registry : [];
+    const entry = registry.find(p => p.path === active);
+
+    const hasOpenSpec = entry ? entry.has_openspec : false;
+    const hasWiki = wikiFiles.length > 0;
+
+    if (!hasOpenSpec && !hasWiki) {
+        notifyToast({
+            message: `Workspace '${projectName}' is missing Krokis structure. Run \`krokis doctor\`?`,
+            type: 'warning',
+            actionText: 'DOCTOR',
+            onAction: () => {
+                executeDoctor();
+            },
+            duration: 8000
+        });
+    } else if (!hasOpenSpec) {
+        notifyToast({
+            message: `Workspace '${projectName}' has no OpenSpec configuration (\`openspec/\`).`,
+            type: 'info',
+            actionText: 'DOCTOR',
+            onAction: () => {
+                executeDoctor();
+            },
+            duration: 6000
+        });
+    } else {
+        notifyToast({
+            message: `Project '${projectName}' loaded`,
+            type: 'success',
+            duration: 3000
+        });
+    }
+}
+
 async function initApp() {
+    logToBackend('info', 'initApp', 'Initializing Krokis web application');
+
+    // 0. Sync Project Selector
+    await syncProjectSelector();
+
     // 1. Fetch telemetry
     await fetchTelemetry();
 
     // 2. Load wiki list
     await loadWikiList();
+
+    // 3. Sync Diagnostics section (Doctor report)
+    await syncDiagnosticsSection();
+
+    // Initial workspace check
+    checkWorkspaceShape();
+
+    // Listen for project switching
+    document.addEventListener('projectchange', async (e) => {
+        logToBackend('info', 'projectSelector', `Project change requested: ${e.detail?.path || ''}`);
+        await syncProjectSelector();
+        await fetchTelemetry();
+        await loadWikiList();
+        await syncDiagnosticsSection();
+
+        // If current route is a wiki page that does not exist in the new project, redirect to home/first wiki
+        if (window.location.hash.startsWith('#/wiki/')) {
+            const currentWikiName = window.location.hash.slice('#/wiki/'.length);
+            const exists = wikiFiles.some(f => f.replace(/\.(mdx|md)$/, '') === currentWikiName);
+            if (!exists) {
+                const hasIndex = wikiFiles.some(f => f === 'WIKI_INDEX.mdx');
+                const defaultWiki = hasIndex ? 'WIKI_INDEX' : (wikiFiles[0]?.replace(/\.(mdx|md)$/, '') || 'USER_MANUAL');
+                window.location.hash = `#/wiki/${defaultWiki}`;
+            }
+        }
+
+        await handleRoute();
+
+        // Check workspace shape and notify user
+        checkWorkspaceShape();
+    });
 
     // 3. Setup router
     window.addEventListener('hashchange', handleRoute);
@@ -135,17 +409,32 @@ async function initApp() {
         await handleRoute();
         btn.classList.remove('is-loading');
         btn.disabled = false;
+        notifyToast({
+            message: 'Telemetry refreshed',
+            type: 'info',
+            duration: 2500
+        });
     });
+
+    // Sidebar resize handle
+    initSidebarResize();
 }
 
 async function fetchTelemetry() {
     try {
-        const res = await fetch('/api/insights');
-        if (res.ok) {
-            telemetryData = await res.json();
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            telemetryData = await window.__TAURI__.core.invoke('get_insights');
+        } else {
+            const res = await fetch('/api/insights');
+            if (res.ok) {
+                telemetryData = await res.json();
+            }
+        }
+        if (telemetryData) {
             updateArchivedLinkVisibility();
         }
     } catch (e) {
+        logErrorToFile('fetchTelemetry', e.message || String(e));
         console.error('Failed to load insights:', e);
     }
 }
@@ -160,10 +449,19 @@ function updateArchivedLinkVisibility() {
 
 async function loadWikiList() {
     try {
-        const res = await fetch('/api/wiki');
-        if (res.ok) {
-            wikiFiles = await res.json();
-            const list = document.getElementById('wiki-links');
+        let files = [];
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            const rawFiles = await window.__TAURI__.core.invoke('list_wiki_files');
+            files = rawFiles.map(f => typeof f === 'string' ? f : f.name);
+        } else {
+            const res = await fetch('/api/wiki');
+            if (res.ok) {
+                files = await res.json();
+            }
+        }
+        wikiFiles = files;
+        const list = document.getElementById('wiki-links');
+        if (list) {
             list.innerHTML = '';
             
             wikiFiles.forEach(f => {
@@ -181,16 +479,13 @@ async function loadWikiList() {
                 title.className = 'wiki-nav-title';
                 title.textContent = formatWikiTitle(name);
 
-                const source = document.createElement('span');
-                source.className = 'wiki-nav-source';
-                source.textContent = f;
-
-                link.append(title, source);
+                link.append(title);
                 li.appendChild(link);
                 list.appendChild(li);
             });
         }
     } catch (e) {
+        logErrorToFile('loadWikiList', e.message || String(e));
         console.error('Failed to load wiki index:', e);
     }
 }
@@ -221,6 +516,7 @@ async function handleRoute() {
     }
 
     currentRoute = hash;
+    logToBackend('verbose', 'router', 'Resolved route: ' + hash);
 
     // Update active nav link
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -271,6 +567,11 @@ const routes = [
         render: (container) => renderCoveragePage(container),
     },
     {
+        match: (hash) => hash === '#/roadmap' ? {} : null,
+        title: () => 'Roadmap · Krokis',
+        render: (container) => renderRoadmapPage(container),
+    },
+    {
         match: (hash) => hash === '#/changes' ? {} : null,
         title: () => 'Changes · Krokis',
         render: (container) => renderChangesPage(container),
@@ -299,13 +600,22 @@ const routes = [
 
 async function renderWikiPage(name, container) {
     try {
-        const res = await fetch(`/api/wiki/${name}`);
-        if (!res.ok) {
-            container.innerHTML = `<div style="color: var(--md-sys-color-error, #ffb4ab);">Error: Wiki article '${name}' not found.</div>`;
-            return;
+        let rawText = '';
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            const canonicals = ['AGENTS', 'PRODUCT', 'ARCHITECTURE', 'DESIGN', 'ROADMAP', 'PROJECT_MEMORY'];
+            let fileRel = canonicals.includes(name) ? `${name}.md` : `.krokis/wiki/${name}.mdx`;
+            if (name === 'DOCTOR') {
+                fileRel = '.krokis/DOCTOR.md';
+            }
+            rawText = await window.__TAURI__.core.invoke('get_wiki_content', { filePath: fileRel });
+        } else {
+            const res = await fetch(`/api/wiki/${name}`);
+            if (!res.ok) {
+                container.innerHTML = `<div style="color: var(--md-sys-color-error, #ffb4ab);">Error: Wiki article '${name}' not found.</div>`;
+                return;
+            }
+            rawText = await res.text();
         }
-
-        const rawText = await res.text();
         // Remove YAML frontmatter if present
         let mdText = rawText;
         if (rawText.startsWith('---')) {
@@ -315,28 +625,85 @@ async function renderWikiPage(name, container) {
             }
         }
 
-        // Convert JSX-like tag markup to standard Custom Elements (kebab-case)
-        let processedMD = mdText
-            .replace(/<InfoBox\s+type="([^"]+)"\s*>/g, '<info-box type="$1">')
-            .replace(/<\/InfoBox>/g, '</info-box>')
-            .replace(/<MetricsCard\s+value="([^"]+)"\s+label="([^"]+)"\s*\/>/g, '<metrics-card value="$1" label="$2"></metrics-card>')
-            .replace(/<TaskCadence\s*\/>/g, '<task-cadence-wrapper></task-cadence-wrapper>');
+        // Convert allowlisted MDX components through the shared registry.
+        const processedMD = transformMdxComponents(mdText);
 
         // Render Markdown
         container.innerHTML = `<div class="markdown-body">${marked.parse(processedMD)}</div>`;
         
-        // Populate wrapper elements with telemetry if they are in the page
-        const cadWrapper = container.querySelector('task-cadence-wrapper');
-        if (cadWrapper) {
-            const el = document.createElement('task-cadence');
-            el.data = telemetryData;
-            cadWrapper.replaceWith(el);
-        }
+        await hydrateMdxComponents(container);
 
         Prism.highlightAllUnder(container);
 
     } catch (e) {
+        logErrorToFile('renderWikiPage', e.message || String(e));
         container.innerHTML = `<div style="color: var(--md-sys-color-error, #ffb4ab);">Error loading article: ${e.message}</div>`;
+    }
+}
+
+function transformMdxComponents(markdown) {
+    const registry = window.KROKIS_MDX_COMPONENTS || {};
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    })[character]);
+    const error = (message) => `<div class="mdx-component-error">${escapeHtml(message)}</div>`;
+    const parseAttributes = (raw, definition, componentName) => {
+        const attrs = [];
+        const allowed = new Set(definition.props || []);
+        const attributePattern = /([A-Za-z][\w:-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'))?/g;
+        let match;
+        while ((match = attributePattern.exec(raw))) {
+            const name = match[1];
+            if (!allowed.has(name)) {
+                return { error: `${componentName}: unsupported prop "${name}"` };
+            }
+            const value = match[2] ?? match[3] ?? '';
+            attrs.push(` ${name}="${escapeHtml(value)}"`);
+        }
+        return { value: attrs.join('') };
+    };
+
+    let output = markdown.replace(
+        /<([A-Z][A-Za-z0-9]*)\b([^>]*?)(\/?)>/g,
+        (full, componentName, rawAttrs, slash) => {
+            const definition = registry[componentName];
+            if (!definition) return error(`Unknown MDX component "${componentName}"`);
+            if (!definition.children && !slash) {
+                return error(`${componentName} does not accept children`);
+            }
+            const parsed = parseAttributes(rawAttrs, definition, componentName);
+            if (parsed.error) return error(parsed.error);
+            const data = definition.data ? ` data-krokis-mdx="${definition.data}"` : '';
+            const opening = `<${definition.tag}${parsed.value}${data}>`;
+            return slash ? `${opening}</${definition.tag}>` : opening;
+        }
+    );
+
+    output = output.replace(/<\/([A-Z][A-Za-z0-9]*)\s*>/g, (full, componentName) => {
+        const definition = registry[componentName];
+        return definition?.children ? `</${definition.tag}>` : error(`Unknown or invalid closing tag "${componentName}"`);
+    });
+
+    return output;
+}
+
+async function hydrateMdxComponents(container) {
+    const elements = container.querySelectorAll('[data-krokis-mdx]');
+    for (const element of elements) {
+        const source = element.getAttribute('data-krokis-mdx');
+        element.removeAttribute('data-krokis-mdx');
+        if (source === 'telemetry') {
+            element.data = telemetryData;
+        } else if (source === 'roadmap') {
+            try {
+                const board = window.__TAURI__?.core
+                    ? await window.__TAURI__.core.invoke('get_roadmap')
+                    : null;
+                element.data = board || { columns: [], found: false };
+            } catch (e) {
+                element.replaceWith(document.createTextNode(`Roadmap unavailable: ${e.message || e}`));
+            }
+        }
     }
 }
 
@@ -381,6 +748,37 @@ function renderCoveragePage(container) {
         title: 'Spec Coverage',
         subtitle: 'Implementation evidence for OpenSpec requirements, not validation pass/fail.',
     });
+}
+
+async function renderRoadmapPage(container) {
+    let board = { columns: [], found: false, source_path: 'ROADMAP.md' };
+    try {
+        if (window.__TAURI__ && window.__TAURI__.core) {
+            board = await window.__TAURI__.core.invoke('get_roadmap');
+        } else {
+            const res = await fetch('/api/roadmap');
+            if (res.ok) board = await res.json();
+        }
+    } catch (e) {
+        logErrorToFile('renderRoadmapPage', e.message || String(e));
+        notifyToast({
+            message: `Failed to load roadmap: ${e.message || e}`,
+            type: 'error',
+            duration: 5000,
+        });
+    }
+
+    const changeNames = Array.isArray(telemetryData?.change_flow?.changes)
+        ? telemetryData.change_flow.changes.map((c) => c.name).filter(Boolean)
+        : [];
+
+    const { el } = mountPage(container, {
+        tag: 'roadmap-board',
+        title: 'Roadmap',
+        subtitle: 'Commitment horizons from ROADMAP.md. View-only — agents reorganize the Markdown.',
+        maxWidth: '100%',
+    });
+    el.data = { ...board, change_names: changeNames };
 }
 
 function renderChangesPage(container) {

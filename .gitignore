@@ -4,7 +4,14 @@ dist/
 bin/
 tmp/
 
-# Air live-reload artifacts
+# Rust / Tauri
+src-tauri/target/
+
+# Frontend development
+node_modules/
+web/dist/
+
+# Air live-reload artifacts (legacy)
 .air/
 
 # Playwright CLI scratch space

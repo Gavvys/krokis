@@ -1,18 +1,16 @@
-.PHONY: build dev dev-live test validate check
+.PHONY: dev build check validate ensure-tauri
 
-build:
-	go build -o krokis .
+ensure-tauri:
+	@cargo tauri --version >/dev/null 2>&1 || (echo "Missing Tauri CLI. Install with:"; echo "  cargo install tauri-cli --version \"^2\" --locked"; exit 1)
 
-dev: build
-	./krokis insights && ./krokis serve --port 8080
+dev: ensure-tauri
+	cargo tauri dev
 
-dev-live:
-	air
+build: ensure-tauri
+	cargo tauri build
 
-test:
-	go test ./...
+check:
+	cd src-tauri && cargo check
 
 validate:
 	openspec validate --all --strict
-
-check: test validate

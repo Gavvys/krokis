@@ -7,11 +7,11 @@ Derive local OpenSpec change-flow records from `openspec/changes/` and report te
 Krokis SHALL derive change-flow records from the local `openspec/changes/` directory without modifying its contents. An active change record SHALL use the `created` date from its `.openspec.yaml`; an archived change record SHALL use its `.openspec.yaml` creation date and the `YYYY-MM-DD` archive-directory prefix as completion date.
 
 #### Scenario: Active change is discovered
-- **WHEN** `krokis insights` runs in a workspace containing `openspec/changes/<change>/.openspec.yaml` with a valid `created` date
+- **WHEN** `get_insights` runs in a workspace containing `openspec/changes/<change>/.openspec.yaml` with a valid `created` date
 - **THEN** the generated telemetry includes that change as active with its name and age in whole calendar days
 
 #### Scenario: Archived change is discovered
-- **WHEN** `krokis insights` runs in a workspace containing `openspec/changes/archive/YYYY-MM-DD-<change>/.openspec.yaml` with a valid `created` date
+- **WHEN** `get_insights` runs in a workspace containing `openspec/changes/archive/YYYY-MM-DD-<change>/.openspec.yaml` with a valid `created` date
 - **THEN** the generated telemetry includes that change as completed with its completion date and cycle time in whole calendar days
 
 #### Scenario: Change date is unavailable

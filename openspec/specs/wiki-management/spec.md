@@ -1,40 +1,40 @@
 # wiki-management Specification
 
 ## Purpose
-TBD - created by archiving change initialize-krokis-cli. Update Purpose after archive.
+Defines SNAKE_CASE wiki listing, reading, and creation for the active workspace via native Rust Tauri IPC commands.
+
 ## Requirements
 ### Requirement: SNAKE_CASE wiki constraint
-The Krokis CLI SHALL require all wiki master files under `.krokis/wiki/` to be named in SNAKE_CASE with `.mdx` extension.
+The Krokis desktop application SHALL require all wiki master files under `.krokis/wiki/` to be named in SNAKE_CASE with `.mdx` extension.
 
 #### Scenario: User attempts to create a non-SNAKE_CASE wiki file
-- **WHEN** user executes `krokis wiki create "New-Design"` or places `New-Design.md` in `.krokis/wiki/`
-- **THEN** system rejects the creation or validation with a name-format error, explaining that it must be SNAKE_CASE and end in `.mdx`
+- **WHEN** user requests wiki creation with name `New-Design` via `create_wiki_page`
+- **THEN** system rejects the creation with a name-format error explaining that it must be SNAKE_CASE
 
 ### Requirement: Create wiki file
-The Krokis CLI SHALL provide a CLI command to scaffold a new SNAKE_CASE MDX wiki file with default frontmatter.
+The Krokis desktop application SHALL provide an IPC command to scaffold a new SNAKE_CASE MDX wiki file with default frontmatter.
 
 #### Scenario: Creating a valid wiki file
-- **WHEN** user executes `krokis wiki create "system_architecture"`
-- **THEN** system creates `.krokis/wiki/SYSTEM_ARCHITECTURE.mdx` with default frontmatter (`title`, `author`, `created_at`) and exits with 0
+- **WHEN** frontend invokes `create_wiki_page` with name `system_architecture`
+- **THEN** system creates `.krokis/wiki/SYSTEM_ARCHITECTURE.mdx` with default frontmatter (`title`, `author`) and returns the filename
 
 ### Requirement: User manual scaffolding
-The Krokis CLI MUST scaffold a `USER_MANUAL.mdx` page explaining Krokis usages and widgets by default on project initialization.
+Workspace initialization MUST scaffold a `USER_MANUAL.mdx` page explaining Krokis usages and widgets by default.
 
-#### Scenario: Running init scaffolds user manual
-- **WHEN** user executes `krokis init`
+#### Scenario: Initializing a workspace scaffolds user manual
+- **WHEN** user initializes a Krokis workspace
 - **THEN** system creates `.krokis/wiki/USER_MANUAL.mdx` with interactive custom component references
 
-### Requirement: Auto-index on wiki create
-The Krokis CLI MUST automatically regenerate the `WIKI_INDEX.mdx` file after creating any new wiki document.
+### Requirement: Wiki listing via IPC
+The system SHALL list SNAKE_CASE `.mdx` wiki documents and root canonical reference files for the active project via `list_wiki_files`.
 
-#### Scenario: Creating a wiki file triggers indexing
-- **WHEN** user executes `krokis wiki create "testing_indexing"`
-- **THEN** system scaffolds the new file and executes the index generator to update `WIKI_INDEX.mdx` automatically
+#### Scenario: Listing wiki files via IPC
+- **WHEN** frontend invokes `list_wiki_files` for the active project
+- **THEN** Rust backend scans `.krokis/wiki/` and returns wiki file names plus root master files (`AGENTS.md`, `PRODUCT.md`, `ARCHITECTURE.md`, `DESIGN.md`, `ROADMAP.md`, `PROJECT_MEMORY.md`) when present
 
 ### Requirement: Root Architecture source precedence
-The `krokis init` command SHALL NOT scaffold `ARCHITECTURE.mdx` in the wiki directory. The dashboard's root `ARCHITECTURE.md` mapping SHALL remain the sole Architecture source.
+Workspace scaffolding SHALL NOT create `ARCHITECTURE.mdx` in the wiki directory. The dashboard's root `ARCHITECTURE.md` mapping SHALL remain the sole Architecture source.
 
 #### Scenario: Initializing a workspace
-- **WHEN** user executes `krokis init`
+- **WHEN** user initializes a Krokis workspace
 - **THEN** the wiki directory does not contain `ARCHITECTURE.mdx` and the Architecture dashboard page resolves from root `ARCHITECTURE.md`
-

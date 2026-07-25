@@ -1,34 +1,34 @@
 # cli-doctor Specification
 
 ## Purpose
-TBD - created by archiving change krokis-config-schema. Update Purpose after archive.
+Defines workspace health diagnostics for validating Krokis project layout and configuration.
+
 ## Requirements
-### Requirement: Doctor validation
-The Krokis CLI MUST provide a `krokis doctor` command that runs a complete validation of the project directory state and layout.
+### Requirement: Workspace health validation
+The Krokis desktop application MUST provide workspace health diagnostics that validate project directory state and layout for the active workspace.
 
-#### Scenario: Running krokis doctor in a healthy repository
-- **WHEN** user executes `krokis doctor` in a project with a valid config, working git repo, and scaffolded folders
-- **THEN** system prints a success summary and exits with 0
+#### Scenario: Diagnosing a healthy repository
+- **WHEN** diagnostics run against a project with a valid config, working git repo, and scaffolded folders
+- **THEN** system reports a success summary with no failing checks
 
-#### Scenario: Running krokis doctor in an unhealthy repository
-- **WHEN** user executes `krokis doctor` in a directory that is not a git repository
-- **THEN** system prints error details and exits with 1
+#### Scenario: Diagnosing an unhealthy repository
+- **WHEN** diagnostics run against a directory that is not a git repository
+- **THEN** system reports error details for the failing checks
 
-### Requirement: Doctor OpenAPI check
-The `krokis doctor` command MUST verify that the configured OpenAPI specification file exists on disk.
+### Requirement: OpenAPI path check
+Workspace diagnostics MUST verify that the configured OpenAPI specification file exists on disk when configured.
 
-#### Scenario: Doctor runs with missing OpenAPI file
-- **WHEN** user executes `krokis doctor` where the configured `openapi` spec path points to a file that does not exist
-- **THEN** system prints a warning warning detailing the missing OpenAPI specification file
+#### Scenario: Diagnostics with missing OpenAPI file
+- **WHEN** diagnostics run where the configured `openapi` spec path points to a file that does not exist
+- **THEN** system reports a warning detailing the missing OpenAPI specification file
 
-### Requirement: Doctor diagnostics structure
-The `krokis doctor` command SHALL run a list of diagnostic checks against the workspace. The command SHALL define its checks as a table of `[]Check{{name, status, message}}` entries so adding a new check is a single table entry. The runner iterates the table, prints each check with the appropriate pass or warning icon, and exits with status 1 if any check has `status: "fail"`.
+### Requirement: Diagnostics structure
+Workspace diagnostics SHALL run a list of checks against the workspace. Checks SHALL be defined as a table of entries with name, status, and message so adding a new check is a single table entry.
 
 #### Scenario: All checks pass
-- **WHEN** every check in the table has `status: "ok"`
-- **THEN** the runner prints every check and exits with status 0
+- **WHEN** every check in the table has status `ok`
+- **THEN** diagnostics report every check as passing
 
 #### Scenario: One check fails
-- **WHEN** at least one check has `status: "fail"`
-- **THEN** the runner prints every check and exits with status 1
-
+- **WHEN** at least one check has status `fail`
+- **THEN** diagnostics report every check and surface the failure

@@ -1,59 +1,40 @@
 # cli-core Specification
 
 ## Purpose
-TBD - created by archiving change initialize-krokis-cli. Update Purpose after archive.
-## Requirements
-### Requirement: Init scaffolding
-The Krokis CLI MUST scaffold a `.krokis/` directory when `krokis init` is run in the root of a Git repository.
+Defines desktop application core workspace management, project scaffolding, configuration schemas, and native IPC commands in Krokis.
 
-#### Scenario: Running krokis init for the first time
-- **WHEN** user executes `krokis init` in a directory containing `.git/` but no `.krokis/`
-- **THEN** system creates `.krokis/` directory, writes default `.krokis/config.toml`, scaffolds `.krokis/wiki/` and `.krokis/skills/` directories, and exits with 0
+## Requirements
+### Requirement: Workspace directory initialization
+The Krokis application MUST scaffold a `.krokis/` directory when initializing a new Git workspace directory.
+
+#### Scenario: Initializing workspace
+- **WHEN** user initializes Krokis on a workspace containing `.git/` but no `.krokis/`
+- **THEN** system creates `.krokis/` directory, writes default `.krokis/config.toml`, and scaffolds `.krokis/wiki/` directory
 
 ### Requirement: Configuration loading
-The Krokis CLI SHALL parse and load settings from `.krokis/config.toml` for all subcommands.
+The Krokis application SHALL parse and load settings from `.krokis/config.toml` for telemetry and OpenAPI paths.
 
-#### Scenario: Running a subcommand with valid configuration
-- **WHEN** user executes `krokis serve` with a valid `.krokis/config.toml` containing a port setting
-- **THEN** system successfully starts the server on the configured port
+#### Scenario: Loading workspace configuration
+- **WHEN** system loads a workspace with a valid `.krokis/config.toml`
+- **THEN** system successfully parses workspace configuration properties
 
 ### Requirement: OpenAPI scaffolding and config validation
-The Krokis CLI MUST support an `openapi` filepath config setting and scaffold a sample `openapi.yaml` on `krokis init`.
+The Krokis application MUST support an `openapi` filepath config setting and scaffold a sample `openapi.yaml` on workspace initialization.
 
-#### Scenario: Running init scaffolds openapi
-- **WHEN** user executes `krokis init`
+#### Scenario: Scaffolding openapi
+- **WHEN** user initializes Krokis workspace
 - **THEN** system scaffolds `.krokis/config.toml` containing an `openapi` path mapping, and writes a default sample `openapi.yaml` in the workspace root
 
 ### Requirement: Plural agents directory priority
-The Krokis CLI MUST prioritize reading and writing Agent Skills inside the plural `.agents/skills/` directory, while preserving the singular `.agent/skills/` path as a fallback.
+The Krokis application MUST prioritize reading and writing Agent Skills inside the plural `.agents/skills/` directory, while preserving the singular `.agent/skills/` path as a fallback.
 
-#### Scenario: Running init prioritizing plural
-- **WHEN** user executes `krokis init` in a workspace containing both `.agents` and `.agent` or containing neither
+#### Scenario: Prioritizing plural agents skills
+- **WHEN** system checks skills in a workspace containing both `.agents` and `.agent` or containing neither
 - **THEN** system scaffolds skills under `.agents/skills/`
 
-### Requirement: CLI command structure
-Every Krokis CLI subcommand SHALL be defined as a `cobra.Command` with a `Run` function. When the command needs the loaded `config.Config`, the `Run` function SHALL call `cmd.loadConfigOrDie()` as its first line. The helper centralizes the load-or-die behavior so each command no longer inlines `config.Load()` plus its own error branch.
+### Requirement: Desktop Rust application structure
+Every Krokis backend module SHALL be implemented natively in Rust within the `src-tauri/` crate and exposed via Tauri `#[tauri::command]` IPC handlers.
 
-#### Scenario: Command uses the helper
-- **WHEN** a CLI command needs the config
-- **THEN** it calls `loadConfigOrDie()` once at the top of its `Run` function and uses the returned config
-
-### Requirement: Init scaffolding and post-init doctor invocation
-The `krokis init` command SHALL scaffold a workspace's Krokis setup and SHALL be safe to run on a workspace that already contains Krokis artifacts. The command SHALL NOT overwrite any existing file. The command SHALL print a `↻ Skipped <path> (already exists)` line for every file it does not write and a `✓ Created <path>` line for every file it does write. After scaffolding completes, the command SHALL automatically invoke `krokis doctor` and stream the doctor output. The command SHALL accept `--verbose` to print directory creations alongside file creations, and `--skip-doctor` to suppress the doctor invocation.
-
-#### Scenario: Fresh project gets full scaffold and doctor
-- **WHEN** the user runs `krokis init` on a workspace with no prior `.krokis/` directory
-- **THEN** the command writes the default config, scaffolds every wiki template, every agent skill, and the sample OpenAPI spec, then prints the doctor table
-
-#### Scenario: Existing project gets gap fill and doctor
-- **WHEN** the user runs `krokis init` on a workspace that already has some Krokis artifacts
-- **THEN** the command skips existing files, writes only the missing ones, then prints the doctor table
-
-#### Scenario: Init with skip-doctor
-- **WHEN** the user runs `krokis init --skip-doctor`
-- **THEN** the command completes scaffolding and does not invoke the doctor
-
-#### Scenario: Init with verbose
-- **WHEN** the user runs `krokis init --verbose` on a partially scaffolded workspace
-- **THEN** the command prints every directory it created alongside the files it created and skipped
-
+#### Scenario: Executing Tauri IPC handler
+- **WHEN** the frontend webview invokes a backend IPC command
+- **THEN** the corresponding Rust `#[tauri::command]` handler processes the request against the active workspace root and returns structured JSON
