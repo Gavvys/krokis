@@ -1,34 +1,34 @@
 # project-insights Specification
 
 ## Purpose
-TBD - created by archiving change initialize-krokis-cli. Update Purpose after archive.
+Defines native Rust telemetry gathering for Git cadence, OpenSpec change flow, and codebase metrics returned to the desktop dashboard via Tauri IPC.
+
 ## Requirements
 ### Requirement: Task cadence telemetry
-The Krokis CLI SHALL analyze local Git commits to calculate task cadence (velocity, commits per author, cycle times).
+The Krokis desktop application SHALL analyze local Git commits for the active workspace to calculate task cadence (commits per author, recent commit volume, and daily heatmap data).
 
-#### Scenario: Running insights on a Git repo
-- **WHEN** user executes `krokis insights` in a Git repository
-- **THEN** system processes the git logs and outputs a telemetry dataset to `.krokis/insights/cadence.json`
+#### Scenario: Gathering insights on a Git repo
+- **WHEN** the frontend invokes `get_insights` for an active Git workspace
+- **THEN** the Rust backend processes git logs and returns a telemetry payload containing git cadence fields
 
 ### Requirement: Include change-flow data in insights telemetry
-The `krokis insights` command SHALL write local OpenSpec change-flow data with its existing health telemetry to `.krokis/insights/health.json` when an `openspec/changes/` directory is present. The command SHALL continue to generate existing Git and codebase fields.
+The `get_insights` IPC command SHALL include local OpenSpec change-flow data when an `openspec/changes/` directory is present under the active workspace. The command SHALL continue to generate existing Git and codebase fields.
 
-#### Scenario: Generating insights in an OpenSpec workspace
-- **WHEN** user executes `krokis insights` in a repository with an `openspec/changes/` directory
-- **THEN** `.krokis/insights/health.json` contains existing telemetry fields and a change-flow section
+#### Scenario: Gathering insights in an OpenSpec workspace
+- **WHEN** the frontend invokes `get_insights` for a repository with an `openspec/changes/` directory
+- **THEN** the returned payload contains existing telemetry fields and a change-flow section
 
-#### Scenario: Generating insights without OpenSpec changes
-- **WHEN** user executes `krokis insights` in a repository without an `openspec/changes/` directory
+#### Scenario: Gathering insights without OpenSpec changes
+- **WHEN** the frontend invokes `get_insights` for a repository without an `openspec/changes/` directory
 - **THEN** the command completes successfully and reports no active or completed change-flow items
 
 ### Requirement: Include spec coverage data in insights telemetry
-The `krokis insights` command SHALL write local spec-to-code coverage data with its existing health telemetry to `.krokis/insights/health.json` when an `openspec/specs/` directory is present. The command SHALL continue to generate existing Git, codebase, and change-flow fields. When `openspec/specs/` is absent or empty, the coverage field SHALL default to `{ capabilities: [] }` and the command SHALL complete successfully.
+The `get_insights` IPC command SHALL include local spec-to-code coverage data when an `openspec/specs/` directory is present under the active workspace. The command SHALL continue to generate existing Git, codebase, and change-flow fields. When `openspec/specs/` is absent or empty, the coverage field SHALL default to `{ capabilities: [] }` and the command SHALL complete successfully.
 
-#### Scenario: Generating insights with spec coverage data
-- **WHEN** user executes `krokis insights` in a repository with an `openspec/specs/` directory containing one or more `spec.md` files
-- **THEN** `.krokis/insights/health.json` contains existing telemetry fields and a `coverage.capabilities` array with one entry per parsed capability
+#### Scenario: Gathering insights with spec coverage data
+- **WHEN** the frontend invokes `get_insights` for a repository with an `openspec/specs/` directory containing one or more `spec.md` files
+- **THEN** the returned payload contains existing telemetry fields and a `coverage.capabilities` array with one entry per parsed capability
 
-#### Scenario: Generating insights without OpenSpec specs
-- **WHEN** user executes `krokis insights` in a repository without an `openspec/specs/` directory
+#### Scenario: Gathering insights without OpenSpec specs
+- **WHEN** the frontend invokes `get_insights` for a repository without an `openspec/specs/` directory
 - **THEN** the command completes successfully and the coverage field defaults to `{ capabilities: [] }`
-

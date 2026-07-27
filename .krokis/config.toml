@@ -3,8 +3,6 @@ directory = '.krokis/wiki'
 
 [insights]
 directory = '.krokis/insights'
-tests = ''
-lints = ''
 openapi = 'openapi.yaml'
 
 [server]

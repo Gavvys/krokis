@@ -5,8 +5,9 @@ class TaskCadence extends KrokisElement {
             return;
         }
 
-        const commits = this._data.history || [];
-        const authors = this._data.authors || [];
+        const git = this._data.git || this._data;
+        const commits = git.history || [];
+        const authors = git.authors || [];
 
         let authorRows = authors.map(a => `
             <div class="author-row">

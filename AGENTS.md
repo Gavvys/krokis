@@ -7,8 +7,8 @@ Read the relevant project-level references before planning, designing, or implem
 | File | Owns |
 | --- | --- |
 | `PRODUCT.md` | Product vision, philosophy, users, value, scope, and non-goals. |
-| `ARCHITECTURE.md` | Current technical architecture, CLI modules, and durable decisions. |
-| `DESIGN.md` | Design system, styles (Open Sans, glassmorphism, RapiDoc). |
+| `ARCHITECTURE.md` | Current technical architecture, Tauri/Rust modules, and durable decisions. |
+| `DESIGN.md` | Design system, Material 3 tokens, typography, RapiDoc. |
 | `PROJECT_MEMORY.md` | Plain-language record of settled decisions, layouts, and conventions. |
 | `ROADMAP.md` | Current strategic horizon: Now, Queued, Exploring, and Parked. |
 
