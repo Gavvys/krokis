@@ -4,7 +4,7 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 
 ## Now
 
-- **View-only Roadmap Kanban** (`add-roadmap-kanban-view`): project `ROADMAP.md` horizons as a read-only board at `#/roadmap`; agents keep editing Markdown.
+- (none — no active OpenSpec change; Queued items are candidates for the next proposal)
 
 ## Queued
 
@@ -26,6 +26,7 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 
 ## Shipped
 
+- **View-only Roadmap Kanban** (2026-07-28): projects `ROADMAP.md` horizons as a read-only board at `#/roadmap`; agents keep editing Markdown.
 - **OpenSpec workflow visibility** (2026-07-20): `change-flow-insights`, `visualize-change-flow-as-svg-graph` (`#/changes/<name>` SVG graph), and `add-archived-changes-page` surface local OpenSpec work-in-progress, planning health, and history as first-class dashboard sections.
 - **Component reuse foundation** (2026-07-20): `KrokisElement` base class, `mountPage` facade, and table-driven router under `introduce-web-component-base-class-and-route-table`.
 - **Backend helpers** (2026-07-21; revised 2026-07-25): workspace resolution helpers, idempotent scaffolding, and health diagnostics table under `introduce-config-middleware-and-scaffolding-helpers` (now Tauri/Rust IPC oriented).

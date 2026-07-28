@@ -2,7 +2,6 @@
 
 ## Purpose
 Defines the client-side routing, Web Component architecture, rendering pipeline, and Tauri IPC integration for the Krokis desktop application.
-
 ## Requirements
 ### Requirement: Desktop app shell rendering
 The Krokis desktop application SHALL render the web dashboard inside a native Tauri webview shell, loading static assets from `web/` and communicating via Tauri IPC commands (`invoke()`).
@@ -98,3 +97,26 @@ The web dashboard SHALL expose a manual dark/light theme toggle as defined by th
 #### Scenario: Light theme applies
 - **WHEN** a user clicks the toggle while the dashboard is in dark mode
 - **THEN** the M3 light token set takes effect, the user's choice is persisted, and the next reload restores the light theme
+
+### Requirement: Roadmap Kanban dashboard route
+The dashboard SHALL expose a `#/roadmap` route that renders a `RoadmapBoard` Web Component (`web/components/RoadmapBoard.js`) extending `KrokisElement`, mounted via `mountPage`. The page title SHALL be `Roadmap · Krokis`. The route SHALL fetch board data from the `get_roadmap` IPC command rather than from `telemetryData` alone.
+
+#### Scenario: Rendering the Roadmap page
+- **WHEN** the user navigates to `#/roadmap`
+- **THEN** the router matches `#/roadmap`, sets document title `Roadmap · Krokis`, and mounts `roadmap-board` inside a `section-card` via `mountPage`
+
+#### Scenario: Roadmap link activation
+- **WHEN** the active hash is `#/roadmap`
+- **THEN** the sidebar `Roadmap` link has the `active` class and Telemetry insight links do not
+
+### Requirement: Wiki sidebar title transformation
+The dashboard SHALL display each Project Wiki sidebar page using a human-readable Sentence Case title derived from its SNAKE_CASE filename, without displaying the source filename separately.
+
+#### Scenario: Displaying a root master file
+- **WHEN** the wiki IPC returns `ARCHITECTURE.md`
+- **THEN** the sidebar displays `Architecture` without a separate filename subtitle
+
+#### Scenario: Displaying a wiki MDX file
+- **WHEN** the wiki IPC returns `USER_MANUAL.mdx`
+- **THEN** the sidebar displays `User Manual` without a separate filename subtitle
+
