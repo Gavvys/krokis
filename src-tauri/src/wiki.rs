@@ -4,7 +4,10 @@ use std::fs;
 use std::path::Path;
 
 pub fn is_valid_wiki_name(name: &str) -> bool {
-    !name.is_empty() && name.chars().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
+    !name.is_empty()
+        && name
+            .chars()
+            .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == '_')
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -113,7 +116,11 @@ pub fn create_wiki_page(workspace_root: &Path, name: &str) -> Result<String, Str
     );
 
     if let Err(e) = fs::write(&target_path, content) {
-        let err = format!("Failed to write wiki file '{}': {}", target_path.display(), e);
+        let err = format!(
+            "Failed to write wiki file '{}': {}",
+            target_path.display(),
+            e
+        );
         logger::log_error("wiki::create_wiki_page", &err);
         return Err(err);
     }

@@ -171,9 +171,18 @@ Intro text.
         assert_eq!(board.columns[1].cards[1].title, "Plain bullet without bold");
         assert_eq!(board.columns[1].cards[1].body, "");
 
-        assert_eq!(board.columns[2].cards[0].title, "Codebase Context Packer (Repomix)");
-        assert_eq!(board.columns[3].cards[0].title, "Cross-compilation CI pipelines");
-        assert_eq!(board.columns[4].cards[0].title, "OpenSpec workflow visibility");
+        assert_eq!(
+            board.columns[2].cards[0].title,
+            "Codebase Context Packer (Repomix)"
+        );
+        assert_eq!(
+            board.columns[3].cards[0].title,
+            "Cross-compilation CI pipelines"
+        );
+        assert_eq!(
+            board.columns[4].cards[0].title,
+            "OpenSpec workflow visibility"
+        );
         assert!(board.columns[4].cards[0].body.contains("done"));
     }
 

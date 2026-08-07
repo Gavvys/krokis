@@ -28,7 +28,8 @@ pub fn gather_code_metrics(workspace_root: &Path) -> CodeMetrics {
             if name.starts_with('.') && name != "." {
                 return false;
             }
-            if name == "node_modules" || name == "vendor" || name == "openspec" || name == "target" {
+            if name == "node_modules" || name == "vendor" || name == "openspec" || name == "target"
+            {
                 return false;
             }
         }

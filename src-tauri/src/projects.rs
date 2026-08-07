@@ -166,13 +166,14 @@ pub fn get_project_state(_app: &AppHandle<Wry>) -> ProjectState {
     }
 
     // Resolve active project
-    let active_path = if !registry.active_project.is_empty() && Path::new(&registry.active_project).exists() {
-        resolve_workspace_root(Path::new(&registry.active_project))
-    } else if let Some(cwd_root) = default_workspace_from_cwd() {
-        cwd_root
-    } else {
-        PathBuf::from(".")
-    };
+    let active_path =
+        if !registry.active_project.is_empty() && Path::new(&registry.active_project).exists() {
+            resolve_workspace_root(Path::new(&registry.active_project))
+        } else if let Some(cwd_root) = default_workspace_from_cwd() {
+            cwd_root
+        } else {
+            PathBuf::from(".")
+        };
 
     let active_str = active_path.to_string_lossy().to_string();
     if registry.active_project != active_str {
@@ -181,7 +182,10 @@ pub fn get_project_state(_app: &AppHandle<Wry>) -> ProjectState {
     }
 
     // Ensure active project is in projects list (if not home directory)
-    if !active_str.is_empty() && Path::new(&active_str).exists() && !is_home_directory(Path::new(&active_str)) {
+    if !active_str.is_empty()
+        && Path::new(&active_str).exists()
+        && !is_home_directory(Path::new(&active_str))
+    {
         let has_spec = Path::new(&active_str).join("openspec").is_dir();
         if let Some(entry) = registry.projects.iter_mut().find(|p| p.path == active_str) {
             entry.last_opened_at = now.clone();
@@ -201,7 +205,9 @@ pub fn get_project_state(_app: &AppHandle<Wry>) -> ProjectState {
     }
 
     // Sort projects by last_opened_at descending
-    registry.projects.sort_by(|a, b| b.last_opened_at.cmp(&a.last_opened_at));
+    registry
+        .projects
+        .sort_by(|a, b| b.last_opened_at.cmp(&a.last_opened_at));
 
     if modified {
         save_registry(&registry);
@@ -216,14 +222,20 @@ pub fn get_project_state(_app: &AppHandle<Wry>) -> ProjectState {
     }
 }
 
-pub fn set_active_project(app: &AppHandle<Wry>, project_path: &str) -> Result<ProjectState, String> {
+pub fn set_active_project(
+    app: &AppHandle<Wry>,
+    project_path: &str,
+) -> Result<ProjectState, String> {
     let p = Path::new(project_path);
     if !p.exists() || !p.is_dir() {
         return Err(format!("Invalid workspace directory: {}", project_path));
     }
 
     if is_home_directory(p) {
-        let msg = format!("Cannot register home directory as project: {}", project_path);
+        let msg = format!(
+            "Cannot register home directory as project: {}",
+            project_path
+        );
         logger::log_warn("set_active_project", &msg);
         return Err(msg);
     }
@@ -251,7 +263,9 @@ pub fn set_active_project(app: &AppHandle<Wry>, project_path: &str) -> Result<Pr
     }
 
     // Sort projects by last_opened_at descending
-    registry.projects.sort_by(|a, b| b.last_opened_at.cmp(&a.last_opened_at));
+    registry
+        .projects
+        .sort_by(|a, b| b.last_opened_at.cmp(&a.last_opened_at));
 
     save_registry(&registry);
 

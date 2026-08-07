@@ -36,7 +36,13 @@ pub fn krokis_home_dir() -> Option<PathBuf> {
 /// Centralized logger: outputs formatted logs to terminal (stdout/stderr) and ~/.krokis/app.log
 pub fn log(level: LogLevel, context: &str, message: &str) {
     let timestamp = chrono::Utc::now().to_rfc3339();
-    let formatted_file = format!("[{}] [{}] [{}] {}\n", timestamp, level.as_str(), context, message);
+    let formatted_file = format!(
+        "[{}] [{}] [{}] {}\n",
+        timestamp,
+        level.as_str(),
+        context,
+        message
+    );
 
     // 1. Output directly to terminal stdout/stderr
     match level {

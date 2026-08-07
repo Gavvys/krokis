@@ -21,6 +21,7 @@ description: One-line summary of Krokis desktop actions and Tauri IPC commands.
 | --- | --- |
 | `get_insights` | Gather Git cadence, codebase LOC, OpenSpec change flow, and spec coverage for the active workspace. |
 | `get_roadmap` | Parse workspace-root `ROADMAP.md` into view-only Kanban columns (Now, Queued, Exploring, Parked, Shipped). |
+| `scaffold_workspace` | Idempotently create missing canonical docs, `.krokis/`, wiki templates, OpenSpec scaffolding, OpenAPI sample, and Krokis Agent Skill files, then run Doctor. |
 | `list_wiki_files` | List SNAKE_CASE wiki `.mdx` files and root canonical docs. |
 | `get_wiki_content` | Read a wiki or canonical document from disk. |
 | `create_wiki_page` | Scaffold a new SNAKE_CASE `.mdx` wiki page. |

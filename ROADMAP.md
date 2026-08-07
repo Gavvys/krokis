@@ -26,6 +26,7 @@ This roadmap orders Krokis directions by commitment, not by date. `PRODUCT.md` d
 
 ## Shipped
 
+- **One-step workspace setup** (2026-08-06): `scaffold_workspace` restores idempotent Project Hub initialization for existing directories; creates missing canonical docs, OpenSpec/wiki/OpenAPI scaffolding, and Agent Skills, then runs Doctor without overwriting files or mutating Git.
 - **View-only Roadmap Kanban** (2026-07-28): projects `ROADMAP.md` horizons as a read-only board at `#/roadmap`; agents keep editing Markdown.
 - **OpenSpec workflow visibility** (2026-07-20): `change-flow-insights`, `visualize-change-flow-as-svg-graph` (`#/changes/<name>` SVG graph), and `add-archived-changes-page` surface local OpenSpec work-in-progress, planning health, and history as first-class dashboard sections.
 - **Component reuse foundation** (2026-07-20): `KrokisElement` base class, `mountPage` facade, and table-driven router under `introduce-web-component-base-class-and-route-table`.

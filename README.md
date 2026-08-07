@@ -34,6 +34,10 @@ make dev
 cargo tauri dev
 ```
 
+### Initialize an Existing Project
+
+Open an existing directory in the Project Hub, then choose **Initialize Workspace**. Krokis creates missing canonical documents, OpenSpec and wiki scaffolding, Agent Skills, and an OpenAPI starter without overwriting existing files. It runs Doctor afterward and leaves Git actions to you.
+
 ### Production Build
 
 Build a standalone, native desktop application bundle for your operating system:
@@ -58,6 +62,7 @@ make validate   # openspec validate --all --strict
 | `#/insights/cadence` | Author commit breakdown, recent commits, and a 365-day commit heatmap. |
 | `#/changes` | Active OpenSpec work-in-progress, change age, cycle time, and planning health. |
 | `#/changes/archived` | Completed OpenSpec changes with completion date, cycle time, and planning health. |
+| `#/roadmap` | Read-only Kanban projection of `ROADMAP.md` commitment horizons. |
 | `#/insights/coverage` | Spec-to-code coverage per OpenSpec requirement, classified as covered, partial, or uncovered. |
 | `#/insights/openapi` | Interactive RapiDoc viewer for OpenAPI specifications. |
 

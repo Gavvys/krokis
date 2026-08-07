@@ -75,7 +75,8 @@ pub fn gather_change_flow(change_root: &Path) -> ChangeFlowMetrics {
                     let arch_name = arch_entry.file_name().to_string_lossy().to_string();
                     if let Some((record, month)) = archived_change_record(&arch_path, &arch_name) {
                         *monthly.entry(month).or_insert(0) += 1;
-                        flow.artifact_map.insert(record.name.clone(), collect_artifacts(&arch_path));
+                        flow.artifact_map
+                            .insert(record.name.clone(), collect_artifacts(&arch_path));
                         flow.changes.push(record);
                     }
                 }
@@ -85,14 +86,17 @@ pub fn gather_change_flow(change_root: &Path) -> ChangeFlowMetrics {
 
         let record = change_record(&path, &name, "active", today);
         flow.active_wip += 1;
-        flow.artifact_map.insert(name.clone(), collect_artifacts(&path));
+        flow.artifact_map
+            .insert(name.clone(), collect_artifacts(&path));
         flow.changes.push(record);
     }
 
     for (month, completed) in monthly {
-        flow.monthly_throughput.push(MonthlyThroughput { month, completed });
+        flow.monthly_throughput
+            .push(MonthlyThroughput { month, completed });
     }
-    flow.monthly_throughput.sort_by(|a, b| a.month.cmp(&b.month));
+    flow.monthly_throughput
+        .sort_by(|a, b| a.month.cmp(&b.month));
 
     flow.changes.sort_by(|a, b| {
         if a.status != b.status {
@@ -132,7 +136,12 @@ fn archived_change_record(path: &Path, directory: &str) -> Option<(ChangeFlowRec
     Some((record, month))
 }
 
-fn change_record(path: &Path, name: &str, status: &str, reference_date: NaiveDate) -> ChangeFlowRecord {
+fn change_record(
+    path: &Path,
+    name: &str,
+    status: &str,
+    reference_date: NaiveDate,
+) -> ChangeFlowRecord {
     let mut record = ChangeFlowRecord {
         name: name.to_string(),
         status: status.to_string(),
@@ -234,8 +243,12 @@ fn collect_artifacts(change_path: &Path) -> Vec<String> {
 
     let specs_dir = change_path.join("specs");
     if specs_dir.is_dir() {
-        for entry in walkdir::WalkDir::new(&specs_dir).into_iter().filter_map(|e| e.ok()) {
-            if entry.file_type().is_file() && entry.path().extension().map_or(false, |e| e == "md") {
+        for entry in walkdir::WalkDir::new(&specs_dir)
+            .into_iter()
+            .filter_map(|e| e.ok())
+        {
+            if entry.file_type().is_file() && entry.path().extension().map_or(false, |e| e == "md")
+            {
                 if let Ok(rel) = entry.path().strip_prefix(change_path) {
                     artifacts.push(rel.to_string_lossy().replace('\\', "/"));
                 }

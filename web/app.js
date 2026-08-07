@@ -291,6 +291,31 @@ async function executeDoctor() {
     }
 }
 
+async function executeScaffold() {
+    notifyToast({ message: 'Initializing Krokis workspace...', type: 'info', duration: 3000 });
+    try {
+        if (!(window.__TAURI__ && window.__TAURI__.core)) {
+            throw new Error('Workspace initialization requires the Tauri desktop app.');
+        }
+        const result = await window.__TAURI__.core.invoke('scaffold_workspace');
+        await syncProjectSelector();
+        await fetchTelemetry();
+        await loadWikiList();
+        await syncDiagnosticsSection();
+        await handleRoute();
+        const created = Array.isArray(result?.created) ? result.created.length : 0;
+        const skipped = Array.isArray(result?.skipped) ? result.skipped.length : 0;
+        notifyToast({
+            message: `Workspace ready: ${created} created, ${skipped} already present.`,
+            type: 'success',
+            duration: 5500
+        });
+    } catch (e) {
+        logErrorToFile('executeScaffold', e.message || String(e));
+        notifyToast({ message: `Workspace initialization failed: ${e.message || e}`, type: 'error', duration: 7000 });
+    }
+}
+
 function checkWorkspaceShape() {
     const selector = document.getElementById('project-selector');
     const data = selector?.data || {};
@@ -306,21 +331,21 @@ function checkWorkspaceShape() {
 
     if (!hasOpenSpec && !hasWiki) {
         notifyToast({
-            message: `Workspace '${projectName}' is missing Krokis structure. Run \`krokis doctor\`?`,
+            message: `Workspace '${projectName}' is missing Krokis structure. Initialize it now?`,
             type: 'warning',
-            actionText: 'DOCTOR',
+            actionText: 'INITIALIZE',
             onAction: () => {
-                executeDoctor();
+                executeScaffold();
             },
             duration: 8000
         });
     } else if (!hasOpenSpec) {
         notifyToast({
-            message: `Workspace '${projectName}' has no OpenSpec configuration (\`openspec/\`).`,
+            message: `Workspace '${projectName}' has no OpenSpec configuration. Initialize it now?`,
             type: 'info',
-            actionText: 'DOCTOR',
+            actionText: 'INITIALIZE',
             onAction: () => {
-                executeDoctor();
+                executeScaffold();
             },
             duration: 6000
         });

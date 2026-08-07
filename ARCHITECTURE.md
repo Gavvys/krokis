@@ -16,6 +16,7 @@ Krokis runs as a native desktop application built with Tauri v2 and Rust, housin
 │       ├── projects.rs        # Project Hub active path & store management
 │       ├── wiki.rs            # SNAKE_CASE wiki document reader & writer
 │       ├── roadmap.rs         # ROADMAP.md → view-only Kanban columns/cards
+│       ├── scaffold.rs        # Idempotent workspace initialization and templates
 │       └── metrics/           # Rust telemetry engine
 │           ├── mod.rs         # Telemetry gatherer orchestrator
 │           ├── git.rs         # Git log parsing & commit cadence
@@ -46,6 +47,7 @@ Krokis runs as a native desktop application built with Tauri v2 and Rust, housin
     *   `invoke('list_wiki_files')`: Scans `.krokis/wiki/*.mdx` and root canonical files (`PRODUCT.md`, `ARCHITECTURE.md`, `DESIGN.md`, `ROADMAP.md`, `PROJECT_MEMORY.md`).
     *   `invoke('get_wiki_content')`: Reads raw markdown content from disk.
     *   `invoke('get_roadmap')`: Parses workspace-root `ROADMAP.md` into Now/Queued/Exploring/Parked/Shipped columns for the view-only Kanban board (`#/roadmap`). Does not write the file.
+        *   `invoke('scaffold_workspace')`: Creates missing Krokis/OpenSpec starter files and runs Doctor without overwriting existing files or mutating Git.
     *   `invoke('create_wiki_page')`: Creates new SNAKE_CASE `.mdx` wiki pages.
 
 3.  **Project Hub IPC**:

@@ -25,7 +25,10 @@ pub fn check_doctor_report_exists(workspace_root: &Path) -> bool {
 }
 
 pub fn run_doctor(workspace_root: &Path) -> Result<DoctorReport, String> {
-    logger::log_info("doctor::run_doctor", &format!("Running doctor checks for {}", workspace_root.display()));
+    logger::log_info(
+        "doctor::run_doctor",
+        &format!("Running doctor checks for {}", workspace_root.display()),
+    );
 
     let timestamp = chrono::Utc::now().to_rfc3339();
     let mut items = Vec::new();
@@ -141,7 +144,10 @@ pub fn run_doctor(workspace_root: &Path) -> Result<DoctorReport, String> {
                 flutter_output = Some(full);
             }
             Err(e) => {
-                logger::log_warn("doctor::run_doctor", &format!("`flutter doctor` failed to execute: {}", e));
+                logger::log_warn(
+                    "doctor::run_doctor",
+                    &format!("`flutter doctor` failed to execute: {}", e),
+                );
             }
         }
     }
@@ -149,7 +155,11 @@ pub fn run_doctor(workspace_root: &Path) -> Result<DoctorReport, String> {
     // Generate Markdown content
     let mut md = String::new();
     md.push_str("# Doctor Report\n\n");
-    md.push_str(&format!("*Generated on {} for `{}`*\n\n", timestamp, workspace_root.display()));
+    md.push_str(&format!(
+        "*Generated on {} for `{}`*\n\n",
+        timestamp,
+        workspace_root.display()
+    ));
 
     md.push_str("## Project Health Checks\n\n");
     md.push_str("| Check | Status | Details |\n");
@@ -161,7 +171,10 @@ pub fn run_doctor(workspace_root: &Path) -> Result<DoctorReport, String> {
             "WARN" => "⚠ WARN",
             _ => "✗ FAIL",
         };
-        md.push_str(&format!("| {} | {} | {} |\n", item.name, status_icon, item.details));
+        md.push_str(&format!(
+            "| {} | {} | {} |\n",
+            item.name, status_icon, item.details
+        ));
     }
     md.push_str("\n");
 
@@ -184,7 +197,10 @@ pub fn run_doctor(workspace_root: &Path) -> Result<DoctorReport, String> {
         return Err(err_msg);
     }
 
-    logger::log_info("doctor::run_doctor", &format!("Doctor report written to {}", doctor_md_path.display()));
+    logger::log_info(
+        "doctor::run_doctor",
+        &format!("Doctor report written to {}", doctor_md_path.display()),
+    );
 
     Ok(DoctorReport {
         timestamp,

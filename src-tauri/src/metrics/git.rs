@@ -89,15 +89,31 @@ pub fn gather_git_metrics(workspace_root: &Path) -> GitMetrics {
         }
         Ok(out) => {
             let err = String::from_utf8_lossy(&out.stderr);
-            logger::log_error("gather_git_metrics", &format!("git log status non-zero in '{}': {}", workspace_root.display(), err));
+            logger::log_error(
+                "gather_git_metrics",
+                &format!(
+                    "git log status non-zero in '{}': {}",
+                    workspace_root.display(),
+                    err
+                ),
+            );
         }
         Err(e) => {
-            logger::log_error("gather_git_metrics", &format!("Failed to run git log in '{}': {}", workspace_root.display(), e));
+            logger::log_error(
+                "gather_git_metrics",
+                &format!(
+                    "Failed to run git log in '{}': {}",
+                    workspace_root.display(),
+                    e
+                ),
+            );
         }
     }
 
     // 2. Daily commit counts for heatmap
-    let since = (Utc::now() - chrono::Duration::days(364)).format("%Y-%m-%d").to_string();
+    let since = (Utc::now() - chrono::Duration::days(364))
+        .format("%Y-%m-%d")
+        .to_string();
     let daily_output = Command::new("git")
         .arg("log")
         .arg(format!("--since={}", since))

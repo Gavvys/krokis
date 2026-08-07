@@ -21,6 +21,11 @@ class ProjectSelector extends KrokisElement {
       const menu = this.shadowRoot.querySelector('.dropdown-menu');
       if (menu) menu.classList.remove('show');
       this._selectFolder();
+    } else if (action === 'initialize-workspace') {
+      e.stopPropagation();
+      const menu = this.shadowRoot.querySelector('.dropdown-menu');
+      if (menu) menu.classList.remove('show');
+      this._initializeWorkspace();
     } else if (action === 'switch-project') {
       const menu = this.shadowRoot.querySelector('.dropdown-menu');
       if (menu) menu.classList.remove('show');
@@ -58,6 +63,53 @@ class ProjectSelector extends KrokisElement {
         message: `Could not open folder: ${msg}`,
         type: 'error',
         duration: 6000
+      });
+    }
+  }
+
+  async _initializeWorkspace() {
+    const projectPath = this._data?.active_project;
+    if (!projectPath || projectPath === 'Select Project') {
+      window.notifyToast?.({
+        message: 'Open a project before initializing its workspace.',
+        type: 'warning',
+        duration: 4500
+      });
+      return;
+    }
+
+    window.notifyToast?.({
+      message: 'Initializing Krokis workspace...',
+      type: 'info',
+      duration: 3000
+    });
+
+    try {
+      if (!(window.__TAURI__ && window.__TAURI__.core)) {
+        throw new Error('Workspace initialization requires the Tauri desktop app.');
+      }
+      const result = await window.__TAURI__.core.invoke('scaffold_workspace', {
+        projectPath
+      });
+      const created = Array.isArray(result?.created) ? result.created.length : 0;
+      const skipped = Array.isArray(result?.skipped) ? result.skipped.length : 0;
+      window.notifyToast?.({
+        message: `Workspace ready: ${created} created, ${skipped} already present.`,
+        type: 'success',
+        duration: 5500
+      });
+      this.dispatchEvent(new CustomEvent('projectchange', {
+        bubbles: true,
+        composed: true,
+        detail: { path: projectPath, initialized: true }
+      }));
+    } catch (err) {
+      console.error('Failed to initialize workspace:', err);
+      const msg = typeof err === 'string' ? err : (err.message || String(err));
+      window.notifyToast?.({
+        message: `Workspace initialization failed: ${msg}`,
+        type: 'error',
+        duration: 7000
       });
     }
   }
@@ -283,6 +335,9 @@ class ProjectSelector extends KrokisElement {
 
           <div class="dropdown-menu">
             ${recentHtml}
+            <button class="dropdown-item dropdown-action" data-action="initialize-workspace">
+              <span>Initialize Workspace</span>
+            </button>
             <button class="dropdown-item dropdown-action" data-action="open-folder">
               <span>+ Open Project...</span>
             </button>

@@ -47,7 +47,10 @@ pub fn gather_coverage_report(workspace_root: &Path) -> CoverageReport {
     let entries = match fs::read_dir(&specs_dir) {
         Ok(e) => e,
         Err(e) => {
-            logger::log_error("gather_coverage_report", &format!("Failed to read specs dir: {}", e));
+            logger::log_error(
+                "gather_coverage_report",
+                &format!("Failed to read specs dir: {}", e),
+            );
             return report;
         }
     };
@@ -59,7 +62,8 @@ pub fn gather_coverage_report(workspace_root: &Path) -> CoverageReport {
             if spec_file.is_file() {
                 if let Ok(content) = fs::read_to_string(&spec_file) {
                     let cap_name = entry.file_name().to_string_lossy().to_string();
-                    let capability = build_capability(&cap_name, &content, &workspace_files, workspace_root);
+                    let capability =
+                        build_capability(&cap_name, &content, &workspace_files, workspace_root);
                     if capability.requirements > 0 {
                         report.total_requirements += capability.requirements;
                         for item in &capability.items {
@@ -89,7 +93,14 @@ pub fn gather_coverage_report(workspace_root: &Path) -> CoverageReport {
 
 fn list_scannable_files(workspace_root: &Path) -> Vec<String> {
     let mut files = Vec::new();
-    let ignore_dirs = ["node_modules", "target", ".git", "vendor", "dist", ".krokis"];
+    let ignore_dirs = [
+        "node_modules",
+        "target",
+        ".git",
+        "vendor",
+        "dist",
+        ".krokis",
+    ];
 
     for entry in WalkDir::new(workspace_root)
         .into_iter()
@@ -106,7 +117,10 @@ fn list_scannable_files(workspace_root: &Path) -> Vec<String> {
             if let Ok(rel) = entry.path().strip_prefix(workspace_root) {
                 let rel_str = rel.to_string_lossy().to_string();
                 if let Some(ext) = entry.path().extension().and_then(|s| s.to_str()) {
-                    if matches!(ext, "js" | "ts" | "jsx" | "tsx" | "rs" | "go" | "py" | "html" | "css") {
+                    if matches!(
+                        ext,
+                        "js" | "ts" | "jsx" | "tsx" | "rs" | "go" | "py" | "html" | "css"
+                    ) {
                         files.push(rel_str);
                     }
                 }
@@ -116,7 +130,12 @@ fn list_scannable_files(workspace_root: &Path) -> Vec<String> {
     files
 }
 
-fn build_capability(name: &str, content: &str, workspace_files: &[String], workspace_root: &Path) -> CoverageCapability {
+fn build_capability(
+    name: &str,
+    content: &str,
+    workspace_files: &[String],
+    workspace_root: &Path,
+) -> CoverageCapability {
     let mut cap = CoverageCapability {
         name: name.to_string(),
         requirements: 0,
@@ -155,7 +174,8 @@ fn build_capability(name: &str, content: &str, workspace_files: &[String], works
         let body = &content[*end..body_end];
 
         let identifiers = extract_identifiers(body);
-        let (matched_count, matched_files) = scan_identifiers(&identifiers, workspace_files, workspace_root);
+        let (matched_count, matched_files) =
+            scan_identifiers(&identifiers, workspace_files, workspace_root);
 
         let status = if matched_count == identifiers.len() && !identifiers.is_empty() {
             "covered".to_string()
@@ -209,10 +229,7 @@ fn extract_identifiers(body: &str) -> Vec<String> {
         }
     }
 
-    let mut result: Vec<String> = raw
-        .into_iter()
-        .filter(|t| is_identifier(t))
-        .collect();
+    let mut result: Vec<String> = raw.into_iter().filter(|t| is_identifier(t)).collect();
     result.sort();
     result
 }
@@ -224,7 +241,8 @@ fn is_identifier(token: &str) -> bool {
     if token.starts_with("#/") {
         return true;
     }
-    let has_separator = token.contains('.') || token.contains('/') || token.contains('_') || token.contains('-');
+    let has_separator =
+        token.contains('.') || token.contains('/') || token.contains('_') || token.contains('-');
     let has_case = token.chars().any(|c| c.is_uppercase());
     if !has_separator && !has_case && token.len() < 6 {
         return false;
@@ -232,7 +250,11 @@ fn is_identifier(token: &str) -> bool {
     true
 }
 
-fn scan_identifiers(identifiers: &[String], workspace_files: &[String], workspace_root: &Path) -> (usize, Vec<String>) {
+fn scan_identifiers(
+    identifiers: &[String],
+    workspace_files: &[String],
+    workspace_root: &Path,
+) -> (usize, Vec<String>) {
     let mut matched = HashSet::new();
     let mut matched_files = HashSet::new();
 
