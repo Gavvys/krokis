@@ -1,0 +1,24 @@
+ARCHITECTURE.md
+  h_e115fcb96e1bb1 20,53
+PROJECT_MEMORY.md
+  h_e115fcb96e1bb1 48-49
+README.md
+  h_e115fcb96e1bb1 69,171,173-174,218,232,238
+src-tauri/src/lib.rs
+  h_e115fcb96e1bb1 4,158-187,422
+src-tauri/src/openapi.rs
+  h_e115fcb96e1bb1 1-69
+web/app.js
+  h_e115fcb96e1bb1 39,908-923,938,949-953,955-960,962-969,975,982
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bc03c029ad90892b50b0d908ebb72af74416a3f3",
+  "prompts": {},
+  "humans": {
+    "h_e115fcb96e1bb1": {
+      "author": "Gavvys <kurtprincip@gmail.com>"
+    }
+  }
+}
