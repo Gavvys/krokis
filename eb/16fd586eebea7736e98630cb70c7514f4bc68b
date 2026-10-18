@@ -1,0 +1,14 @@
+src-tauri/src/wiki.rs
+  h_e115fcb96e1bb1 4,77-127,129,181-253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "eb16fd586eebea7736e98630cb70c7514f4bc68b",
+  "prompts": {},
+  "humans": {
+    "h_e115fcb96e1bb1": {
+      "author": "Gavvys <kurtprincip@gmail.com>"
+    }
+  }
+}
