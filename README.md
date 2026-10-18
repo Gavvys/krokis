@@ -66,7 +66,7 @@ Current maturity: usable prototype at version 0.2.0 (`src-tauri/Cargo.toml`). Co
 - **Change flow**: active and archived OpenSpec changes with age, cycle time, and planning health (which of proposal, specs, design, and tasks are present) (`src-tauri/src/metrics/change_flow.rs`).
 - **Spec-to-code coverage**: every OpenSpec requirement classified as covered, partial, or uncovered by scanning workspace source files (`src-tauri/src/metrics/coverage.rs`).
 - **Roadmap board**: a read-only Kanban projection of the `ROADMAP.md` commitment horizons (Now, Queued, Exploring, Parked) (`src-tauri/src/roadmap.rs`).
-- **API Specification**: a RapiDoc view of the workspace `openapi.yaml`. The spec source is not wired up yet, see [Status](#status).
+- **API Specification**: a RapiDoc view of the workspace `openapi.yaml`, loaded through the Tauri IPC layer (`src-tauri/src/openapi.rs`).
 
 ## Installation
 
@@ -168,10 +168,10 @@ Wiki page names must be uppercase letters, digits, and underscores (`src-tauri/s
 Any directory containing `PRODUCT.md`, `AGENTS.md`, an `openspec/` directory, `.krokis/config.toml`, or `.krokis/wiki/` (`src-tauri/src/projects.rs:59`). Your home directory is refused on purpose, so run Initialize Workspace on a specific project folder instead.
 
 **Can I run the UI in a plain browser?**
-`npm run dev` serves the frontend at `http://127.0.0.1:1420`, but data loading goes through the Tauri IPC layer (`window.__TAURI__.core.invoke`). Without the desktop shell the views fall back to `/api/*` fetches that have no backend, so pages come up empty. Use `make dev` for real work. <!-- TODO: confirm intended browser-only workflow -->
+`npm run dev` serves the frontend at `http://127.0.0.1:1420`, but data loading goes through the Tauri IPC layer (`window.__TAURI__.core.invoke`). Without the desktop shell there is no workspace to read from, so pages come up empty or show placeholder states. Use `make dev` for real work. <!-- TODO: confirm intended browser-only workflow -->
 
-**Why is the API Specification page empty?**
-The RapiDoc element loads its spec from `/api/openapi`, and nothing in the app serves that path yet (`web/app.js:39`). Wiring the workspace `openapi.yaml` to this view is outstanding work, see [Status](#status).
+**Where does the API Specification page get its spec?**
+It reads `openapi.yaml` at the workspace root through the `get_openapi_spec` IPC command (`src-tauri/src/openapi.rs`) and hands the YAML to RapiDoc. A workspace without `openapi.yaml` shows a `No spec configured` placeholder.
 
 **Does it work offline?**
 The JavaScript libraries are bundled in `web/vendor/`, but the UI loads PT Sans and JetBrains Mono from Google Fonts (`web/index.html:28`), and RapiDoc can fetch a webfont of its own. On an air-gapped machine the app works with fallback system fonts. <!-- TODO: confirm acceptable offline behavior -->
@@ -215,7 +215,7 @@ Run the tests:
 cd src-tauri && cargo test
 ```
 
-There is no `test` target in the `Makefile`, and there are no JavaScript tests or lint configuration in the repository. The Rust unit tests cover roadmap markdown parsing (`src-tauri/src/roadmap.rs`) and workspace scaffolding (`src-tauri/src/scaffold.rs`). <!-- TODO: confirm lint tooling choice -->
+There is no `test` target in the `Makefile`, and there are no JavaScript tests or lint configuration in the repository. The Rust unit tests cover roadmap markdown parsing (`src-tauri/src/roadmap.rs`), workspace scaffolding (`src-tauri/src/scaffold.rs`), wiki path containment (`src-tauri/src/wiki.rs`), and OpenAPI spec loading (`src-tauri/src/openapi.rs`). <!-- TODO: confirm lint tooling choice -->
 
 Validate OpenSpec artifacts (requires the `openspec` CLI):
 
@@ -229,14 +229,13 @@ Contributing follows the project's spec-driven workflow: propose the change with
 
 ## Status
 
-- **Maintenance**: version 0.2.0 (`src-tauri/Cargo.toml`). Last commit 2026-08-08 (`0cda01a feat: restore one-step workspace scaffolding`); 53 commits total, almost all between 2026-07-20 and 2026-08-08. Treat this as a prototype that works, maintained in bursts.
+- **Maintenance**: version 0.2.0 (`src-tauri/Cargo.toml`). Active development ran 2026-07-20 to 2026-08-08 (53 commits, ending at `0cda01a feat: restore one-step workspace scaffolding`), then resumed 2026-10-18. Treat this as a prototype that works, maintained in bursts.
 - **Known limitations** (evidence in the code):
-  - The API Specification page has no spec source; `/api/openapi` is fetched but not served (`web/app.js:39`, `web/app.js:936`).
   - `.krokis/config.toml` keys are scaffolded but not read by any code path (`src-tauri/src/scaffold.rs:43`).
   - Fonts load from Google Fonts despite the offline-first goal (`web/index.html:28`).
   - `npm run build` output is unused by `make build` (`src-tauri/tauri.conf.json`).
   - `tauri-plugin-store` is registered but no code uses it (`src-tauri/src/lib.rs:383`).
-  - Tests cover only roadmap parsing and scaffolding; the metrics parsers (`src-tauri/src/metrics/`) have none.
+  - The metrics parsers (`src-tauri/src/metrics/`) have no tests.
   - No CI configuration in the repository.
 - **Written intentions** (from `ROADMAP.md`, not commitments made here): the Queued item is "Wiki content enrichment", and Exploring items include a codebase context packer and a dependency knowledge graph. See `ROADMAP.md` for the full list.
 

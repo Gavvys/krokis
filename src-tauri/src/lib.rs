@@ -1,6 +1,7 @@
 pub mod doctor;
 pub mod logger;
 pub mod metrics;
+pub mod openapi;
 pub mod projects;
 pub mod roadmap;
 pub mod scaffold;
@@ -152,6 +153,36 @@ async fn get_roadmap(
         ),
     );
     Ok(board)
+}
+
+#[tauri::command]
+async fn get_openapi_spec(
+    app: AppHandle<Wry>,
+    project_path: Option<String>,
+) -> Result<Option<String>, String> {
+    logger::log_verbose("ipc::get_openapi_spec", "Reading OpenAPI spec");
+    let ws = resolve_workspace(&app, project_path);
+
+    let ws_clone = ws.clone();
+    let spec = tauri::async_runtime::spawn_blocking(move || openapi::read_spec(&ws_clone))
+        .await
+        .map_err(|e| {
+            let err = format!("Spawn blocking error reading OpenAPI spec: {}", e);
+            logger::log_error("ipc::get_openapi_spec", &err);
+            err
+        })??;
+
+    match &spec {
+        Some(text) => logger::log_info(
+            "ipc::get_openapi_spec",
+            &format!("Read {} bytes from '{}'", text.len(), ws.display()),
+        ),
+        None => logger::log_info(
+            "ipc::get_openapi_spec",
+            &format!("No openapi.yaml found in '{}'", ws.display()),
+        ),
+    }
+    Ok(spec)
 }
 
 #[tauri::command]
@@ -388,6 +419,7 @@ pub fn run() {
             has_doctor_report,
             get_insights,
             get_roadmap,
+            get_openapi_spec,
             scaffold_workspace,
             list_wiki_files,
             get_wiki_content,

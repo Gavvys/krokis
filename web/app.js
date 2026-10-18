@@ -36,7 +36,7 @@ function syncToggleUI() {
 }
 
 const RAPI_DOC_ATTRIBUTES = {
-    'spec-url': '/api/openapi',
+    'spec-url': '',
     'theme': 'dark',
     'regular-font': "'PT Sans', sans-serif",
     'mono-font': 'JetBrains Mono, monospace',
@@ -905,6 +905,22 @@ function renderChangeDetailBody(body, change, artifacts, mode) {
     `;
 }
 
+let openApiBlobUrl = null;
+
+async function fetchOpenApiSpec() {
+    if (window.__TAURI__ && window.__TAURI__.core) {
+        return await window.__TAURI__.core.invoke('get_openapi_spec');
+    }
+    const res = await fetch('openapi.yaml');
+    return res.ok ? await res.text() : null;
+}
+
+function pickInfoField(infoBlock, field) {
+    const escaped = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = infoBlock.match(new RegExp(`^\\s+${escaped}:\\s*(.+)$`, 'm'));
+    return match ? match[1].trim().replace(/^["']|["']$/g, '') : undefined;
+}
+
 async function renderOpenAPIPage(container) {
     const attrs = rapiDocAttributes(getTheme());
     const attrString = Object.entries(attrs)
@@ -919,7 +935,7 @@ async function renderOpenAPIPage(container) {
                 </div>
                 <div class="api-spec-meta">
                     <span id="api-spec-version" class="api-spec-badge api-spec-badge-muted">v—</span>
-                    <a id="api-spec-source" class="api-spec-badge api-spec-badge-link" href="/api/openapi" target="_blank" rel="noopener">view raw</a>
+                    <a id="api-spec-source" class="api-spec-badge api-spec-badge-link" target="_blank" rel="noopener">view raw</a>
                 </div>
             </header>
             <div class="api-spec-frame">
@@ -930,30 +946,40 @@ ${attrString}
         </div>
     `;
 
+    const nameEl = document.getElementById('api-spec-name');
+    const verEl = document.getElementById('api-spec-version');
+    const srcEl = document.getElementById('api-spec-source');
+    const rapiEl = container.querySelector('rapi-doc');
+
     try {
-        const res = await fetch('/api/openapi');
-        if (res.ok) {
-            const text = await res.text();
-            const title = (text.match(/^title:\s*(.+)$/m) || [])[1]?.trim().replace(/^["']|["']$/g, '');
-            const version = (text.match(/^version:\s*(.+)$/m) || [])[1]?.trim().replace(/^["']|["']$/g, '');
-            const nameEl = document.getElementById('api-spec-name');
-            const verEl = document.getElementById('api-spec-version');
-            if (nameEl && title) nameEl.textContent = title;
-            else if (nameEl) nameEl.textContent = 'Untitled spec';
+        const text = await fetchOpenApiSpec();
+        if (text) {
+            const infoBlock = (text.match(/^info:[ \t]*\r?\n((?:[ \t]+[^\r\n]*(?:\r?\n|$))*)/m) || [])[1] || '';
+            const title = pickInfoField(infoBlock, 'title');
+            const version = pickInfoField(infoBlock, 'version');
+            if (nameEl) nameEl.textContent = title || 'Untitled spec';
             if (verEl) verEl.textContent = version ? `v${version}` : 'v—';
+
+            if (openApiBlobUrl) URL.revokeObjectURL(openApiBlobUrl);
+            openApiBlobUrl = URL.createObjectURL(new Blob([text], { type: 'application/yaml' }));
+            if (rapiEl) rapiEl.setAttribute('spec-url', openApiBlobUrl);
+            if (srcEl) {
+                srcEl.href = openApiBlobUrl;
+                srcEl.setAttribute('download', 'openapi.yaml');
+            }
         } else {
-            const nameEl = document.getElementById('api-spec-name');
             if (nameEl) {
                 nameEl.textContent = 'No spec configured';
                 nameEl.classList.add('api-spec-name-empty');
             }
+            if (srcEl) srcEl.style.display = 'none';
         }
     } catch (e) {
-        const nameEl = document.getElementById('api-spec-name');
         if (nameEl) {
             nameEl.textContent = 'Failed to load spec';
             nameEl.classList.add('api-spec-name-empty');
         }
+        if (srcEl) srcEl.style.display = 'none';
     }
 }
 
